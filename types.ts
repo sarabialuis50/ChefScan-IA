@@ -84,6 +84,7 @@ export interface AppState {
   recipeGenerationsToday: number;
   botQuestionsRemaining: number;
   inventory: InventoryItem[];
+  scannedImage?: string;
   history: {
     ingredient: string;
     recipe: string;

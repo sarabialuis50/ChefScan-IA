@@ -6,7 +6,7 @@ import { resizeAndCompressImage } from '../utils/imageUtils';
 
 interface ScannerViewProps {
   onCancel: () => void;
-  onComplete: (ingredients: Ingredient[]) => void;
+  onComplete: (ingredients: Ingredient[], image64: string) => void;
   onReadyToGenerate: () => void;
 }
 
@@ -100,7 +100,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
         setDetected(ingredients);
 
         setTimeout(() => {
-          onComplete(ingredients);
+          onComplete(ingredients, optimizedBase64);
           setTimeout(() => {
             onReadyToGenerate();
           }, 1000);
@@ -123,8 +123,8 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
 
   return (
     <div className="h-screen w-full bg-pure-black flex flex-col items-center justify-center overflow-hidden">
-      {/* Contenedor Vertical (Mobile Aspect Ratio en Desktop) */}
-      <div className="w-full h-full max-w-md bg-zinc-950 relative flex flex-col items-center justify-between overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border-x border-white/5">
+      {/* Contenedor Vertical (Pantalla completa y sin bordes de limitación) */}
+      <div className="w-full h-full relative flex flex-col items-center justify-between overflow-hidden">
 
         <div className="absolute inset-0 z-0">
           {!cameraError ? (
@@ -133,7 +133,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover opacity-60 grayscale-[0.2]"
+              className="w-full h-full object-cover opacity-90"
             />
           ) : (
             <div className="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-10 text-center space-y-6">
@@ -178,9 +178,9 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
                 <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-14 h-14 object-contain opacity-90" />
               </div>
 
-              <div className="bg-surface-dark border border-primary/30 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-xl">
+              <div className="bg-surface-dark/80 backdrop-blur-md border border-primary/30 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-xl">
                 <div className={`w-1.5 h-1.5 rounded-full ${cameraError ? 'bg-red-500' : 'bg-primary animate-pulse'}`}></div>
-                <span className="text-[10px] font-bold tracking-widest text-primary uppercase font-tech">ChefScan Engine v2.5</span>
+                <span className="text-[10px] font-bold tracking-widest text-primary uppercase font-tech">ChefScan.IA Engine v2.5</span>
               </div>
             </div>
           </div>

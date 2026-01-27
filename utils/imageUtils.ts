@@ -55,3 +55,20 @@ export const resizeAndCompressImage = (
         img.onerror = (error) => reject(error);
     });
 };
+
+/**
+ * Convierte una cadena base64 en un objeto Blob.
+ * @param base64 La cadena base64 (con o sin prefijo data:).
+ * @param type El tipo MIME (por defecto image/jpeg).
+ * @returns Un objeto Blob.
+ */
+export const base64ToBlob = (base64: string, type: string = 'image/jpeg'): Blob => {
+    const cleanBase64 = base64.includes(',') ? base64.split(',')[1] : base64;
+    const byteCharacters = atob(cleanBase64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type });
+};

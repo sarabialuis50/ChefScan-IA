@@ -26,6 +26,7 @@ import ChallengesView from './views/ChallengesView';
 import { generateRecipes } from './services/geminiService';
 import { supabase } from './lib/supabase';
 import { InventoryItem } from './types';
+import { base64ToBlob } from './utils/imageUtils';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -351,8 +352,41 @@ const App: React.FC = () => {
     }
   };
 
-  const handleScanComplete = (ingredients: Ingredient[]) => {
-    setState(prev => ({ ...prev, scannedIngredients: ingredients }));
+  const handleScanComplete = async (ingredients: Ingredient[], image64: string) => {
+    setState(prev => ({
+      ...prev,
+      scannedIngredients: ingredients,
+      scannedImage: image64
+    }));
+
+    // Persistencia en Supabase si el usuario está logueado
+    if (state.user?.id) {
+      try {
+        const fileName = `${state.user.id}/scan_${Date.now()}.jpg`;
+        const blob = base64ToBlob(image64, 'image/jpeg');
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('avatars') // Usamos 'avatars' por ahora como el bucket principal
+          .upload(`scans/${fileName}`, blob);
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(`scans/${fileName}`);
+
+          await supabase.from('ingredient_scans').insert({
+            user_id: state.user.id,
+            image_url: publicUrl,
+            ingredients: ingredients
+          });
+          console.log("Scan saved to DB and storage");
+        } else {
+          console.error("Upload error:", uploadError);
+        }
+      } catch (err) {
+        console.error("Error saving scan to storage:", err);
+      }
+    }
   };
 
   const handleStartGeneration = async (ingredients: string[], portions: number, itemId?: string) => {
@@ -583,8 +617,9 @@ const App: React.FC = () => {
             <DashboardView
               user={state.user}
               recentRecipes={state.favoriteRecipes}
-              scannedIngredients={state.scannedIngredients.map(i => i.name)}
-              onClearScanned={() => setState(prev => ({ ...prev, scannedIngredients: [] }))}
+              scannedIngredients={state.scannedIngredients}
+              scannedImage={state.scannedImage}
+              onClearScanned={() => setState(prev => ({ ...prev, scannedIngredients: [], scannedImage: undefined }))}
               onScanClick={() => navigateTo('scanner')}
               onRecipeClick={handleSelectRecipe}
               onGenerate={() => { }}
@@ -778,11 +813,11 @@ const App: React.FC = () => {
 
   const showChatbot = !['landing', 'login', 'scanner', 'loading-recipes'].includes(state.currentView);
 
-  const isLanding = state.currentView === 'landing';
+  const isFullWidthView = ['landing', 'scanner'].includes(state.currentView);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center">
-      <div className={`w-full min-h-screen relative flex flex-col ${!isLanding ? 'max-w-[430px] shadow-[0_0_100px_rgba(0,0,0,0.8)] border-x border-white/5 overflow-hidden' : ''}`}>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center overflow-x-hidden">
+      <div className={`w-full min-h-screen relative flex flex-col items-center ${!isFullWidthView ? 'max-w-[430px] border-x border-white/5' : ''}`}>
         {renderView()}
         {showChatbot && (
           <AIChatbot

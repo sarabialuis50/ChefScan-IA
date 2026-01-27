@@ -9,6 +9,7 @@ interface DashboardViewProps {
   user: any;
   recentRecipes: Recipe[];
   scannedIngredients?: Ingredient[];
+  scannedImage?: string;
   onClearScanned?: () => void;
   onScanClick: () => void;
   onRecipeClick: (recipe: Recipe) => void;
@@ -18,7 +19,7 @@ interface DashboardViewProps {
   onNotificationsClick: () => void;
   onSettingsClick?: () => void;
   onNavClick?: (view: any) => void;
-  onComplete?: (ingredients: Ingredient[]) => void;
+  onComplete?: (ingredients: Ingredient[], image64: string) => void;
   onAddItem?: (name: string, quantity: number, unit: string, expiryDate?: string) => void;
   inventory?: any[];
   acceptedChallengeId?: string | null;
@@ -28,6 +29,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   user,
   recentRecipes,
   scannedIngredients = [],
+  scannedImage,
   onClearScanned,
   onScanClick,
   onRecipeClick,
@@ -50,6 +52,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sincronizar imagen del escáner con la previsualización del Dashboard
+  React.useEffect(() => {
+    if (scannedImage) {
+      // Si es base64 sin prefijo, añadirlo
+      const img = scannedImage.startsWith('data:') ? scannedImage : `data:image/jpeg;base64,${scannedImage}`;
+      setPreviewImage(img);
+    }
+  }, [scannedImage]);
 
   React.useEffect(() => {
     if (scannedIngredients.length > 0) {
@@ -128,7 +139,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
           const names = identifiedIngredients.map(i => i.name).join(', ');
           setManualInput(prev => prev ? `${prev}, ${names}` : names);
-          if (onComplete) onComplete(identifiedIngredients);
+          if (onComplete) onComplete(identifiedIngredients, optimizedBase64);
         } else {
           alert("No pudimos identificar ingredientes claros en esta imagen.");
         }
@@ -161,61 +172,50 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         className="hidden"
       />
 
-      {/* Header */}
-      <header className="flex justify-between items-center w-full">
-        <div className="absolute top-4 left-4">
-          <button
-            onClick={() => onNavClick && onNavClick('landing')}
-            className="flex items-center justify-center p-2 text-zinc-700 hover:text-zinc-500 transition-colors"
-          >
-            <span className="material-symbols-outlined text-lg">arrow_back_ios</span>
-          </button>
+      <div className="flex flex-col items-center gap-4 w-full">
+        <div className="w-16 h-16 bg-black border-2 border-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.3)] overflow-hidden">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <img src="/logo.png" alt="ChefScan Logo" className="w-10 h-10 object-contain" />
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-black border-2 border-primary rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(57,255,20,0.4)] overflow-hidden">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <img src="/logo.png" alt="ChefScan Logo" className="w-8 h-8 object-contain" />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none mb-1">Bienvenido</span>
-            <h2 className="text-white font-bold text-lg leading-none">Chef <span className="text-primary">{user?.name || 'Alejandro'}</span></h2>
-            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none mt-1.5">¿Qué vas a cocinar hoy?</span>
-          </div>
+        <div className="flex flex-col items-center text-center">
+          <span className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] leading-none mb-2">Panel de Control</span>
+          <h2 className="text-white font-bold text-2xl leading-none">Chef <span className="text-primary">{user?.name || 'Alejandro'}</span></h2>
         </div>
-        <div className="flex items-center gap-2">
 
+        {/* Botones de acción centrados */}
+        <div className="flex justify-center gap-3 w-full">
           <button
             onClick={onNotificationsClick}
-            className="w-11 h-11 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center relative active:scale-90 transition-all"
+            className="w-11 h-11 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center relative active:scale-95 transition-all"
           >
-            <span className="material-symbols-outlined text-zinc-400">notifications</span>
+            <span className="material-symbols-outlined text-zinc-400 notranslate">notifications</span>
             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-primary rounded-full neon-glow"></span>
           </button>
           <button
             onClick={onSettingsClick}
-            className="w-11 h-11 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center active:scale-90 transition-all"
+            className="w-11 h-11 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center active:scale-95 transition-all"
           >
-            <span className="material-symbols-outlined text-zinc-400">settings</span>
+            <span className="material-symbols-outlined text-zinc-400 notranslate">settings</span>
           </button>
         </div>
-      </header>
-
-      {/* Hero Branding */}
-      <div className="space-y-1">
-        <h1 className="text-5xl font-black tracking-tighter text-white leading-none">
-          Chef<span className="text-primary">Scan.IA</span>
-        </h1>
-        <p className="text-primary font-medium text-xs">Transforma tus ingredientes en obras maestras.</p>
       </div>
 
-      {/* Ingredient Image Section */}
-      <section className="bg-[#0A0A0A] border border-zinc-800 rounded-[2rem] p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-2xl">photo_camera</span>
-          <h3 className="text-white font-bold uppercase tracking-wider text-sm">Imagen de ingredientes</h3>
+      <div className="text-center space-y-2 py-4 px-2">
+        <h1 className="text-4xl xs:text-5xl font-black tracking-tighter text-white leading-none">
+          Chef<span className="text-primary">Scan.IA</span>
+        </h1>
+        <p className="text-primary font-bold text-[9px] uppercase tracking-[0.25em] opacity-80 max-w-[280px] mx-auto">
+          Transforma tus ingredientes en obras maestras
+        </p>
+      </div>
+
+      <section className="bg-[#0A0A0A] border border-zinc-800 rounded-[2rem] p-6 space-y-6 w-full">
+        <div className="flex flex-col items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-3xl notranslate">photo_camera</span>
+          <h3 className="text-white font-bold uppercase tracking-[0.2em] text-[10px]">Imagen de ingredientes</h3>
         </div>
 
         {/* Preview Box - Image Preview + Results */}
@@ -275,10 +275,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       </section>
 
       {/* Suggested Recipes Section */}
-      <section className="bg-[#0A0A0A] border border-zinc-800 rounded-[2rem] p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-2xl">auto_awesome</span>
-          <h3 className="text-white font-bold uppercase tracking-wider text-sm">Recetas sugeridas</h3>
+      <section className="bg-[#0A0A0A] border border-zinc-800 rounded-[2rem] p-6 space-y-6 w-full">
+        <div className="flex flex-col items-center gap-2">
+          <span className="material-symbols-outlined text-primary text-3xl notranslate">auto_awesome</span>
+          <h3 className="text-white font-bold uppercase tracking-[0.2em] text-[10px]">Recetas sugeridas</h3>
         </div>
 
         <div className="space-y-5">
