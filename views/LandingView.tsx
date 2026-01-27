@@ -40,9 +40,9 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
         <div className="w-full max-w-[340px] bg-[#121212] border border-white/5 rounded-[2.5rem] p-5 shadow-2xl relative z-10 mb-8">
           <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-6 border border-white/10">
             <img
-              src="https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=800"
+              src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800"
               alt="Scanner Preview"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover opacity-80"
             />
             {/* Scanner UI Overlays */}
             <div className="absolute inset-4">
