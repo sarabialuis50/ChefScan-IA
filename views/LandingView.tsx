@@ -75,7 +75,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
           <div className="space-y-4 px-2">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white leading-none">Ingrediente Detectado</h3>
-              <span className="material-symbols-outlined text-[#39FF14] text-lg">check_circle</span>
+              <span className="material-symbols-outlined text-[#39FF14] text-lg notranslate">check_circle</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold text-gray-400">98% Match</span>
@@ -135,7 +135,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
             </div>
             <div className="flex flex-col">
               <span className="font-outfit font-black text-2xl tracking-tighter text-white leading-none">ChefScan<span className="text-[#39FF14]">.IA</span></span>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mt-0.5">Premium Kitchen IA</span>
+              <span className="notranslate text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mt-0.5">Premium Kitchen IA</span>
             </div>
           </div>
           <button className="px-5 py-2 bg-[#39FF14] text-black rounded-full text-xs font-bold hover:bg-[#32e612] transition-all shadow-[0_0_15px_rgba(57,255,20,0.3)]">
@@ -186,7 +186,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
                     className="w-full sm:w-auto px-8 py-6 bg-[#39FF14] text-black hover:bg-[#32e612] transition-all duration-300 rounded-2xl shadow-2xl shadow-[#39FF14]/30 font-bold text-lg flex items-center justify-center group"
                   >
                     Comenzar ahora
-                    <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform h-6 w-6">arrow_forward</span>
+                    <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform h-6 w-6 notranslate">arrow_forward</span>
                   </button>
                   <button
                     onClick={onStart}
@@ -260,7 +260,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
 
                   <div className="bg-gradient-to-br from-[#39FF14]/20 to-[#161616] p-4 rounded-3xl border border-[#39FF14]/20 shadow-xl mt-auto transition-transform hover:-translate-y-1">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="material-symbols-outlined text-[#39FF14] text-sm animate-spin-slow">auto_awesome</span>
+                      <span className="material-symbols-outlined text-[#39FF14] text-sm animate-spin-slow notranslate">auto_awesome</span>
                       <p className="text-[8px] font-bold text-[#39FF14] uppercase tracking-widest text-left">Recomendación ChefScan</p>
                     </div>
                     <h4 className="text-sm font-bold mb-2 text-white text-left">Tostada de Aguacate Gourmet</h4>

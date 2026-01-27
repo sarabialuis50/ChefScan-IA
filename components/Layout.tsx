@@ -42,7 +42,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, showNav = true, active
                 onClick={() => onNavClick?.('scanner')}
                 className="w-[62px] h-[62px] bg-primary rounded-full flex items-center justify-center text-black shadow-[0_10px_30px_rgba(57,255,20,0.4)] border-[5px] border-pure-black transform active:scale-90 transition-all duration-300"
               >
-                <span className="material-symbols-outlined text-[28px] font-black">photo_camera</span>
+                <span className="material-symbols-outlined text-[28px] font-black notranslate">photo_camera</span>
               </button>
             </div>
 
@@ -70,7 +70,7 @@ const NavItem = ({ icon, label, active, onClick }: { icon: string; label: string
     onClick={onClick}
     className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${active ? 'text-primary scale-110' : 'text-zinc-600'}`}
   >
-    <span className={`material-symbols-outlined text-2xl ${active ? 'fill-icon' : ''}`}>
+    <span className={`material-symbols-outlined text-2xl notranslate ${active ? 'fill-icon' : ''}`}>
       {icon}
     </span>
     <span className={`text-[9px] font-black uppercase tracking-widest ${active ? 'opacity-100' : 'opacity-60'}`}>{label}</span>
