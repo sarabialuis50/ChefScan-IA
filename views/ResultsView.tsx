@@ -11,20 +11,20 @@ interface ResultsViewProps {
   loadingMore?: boolean;
 }
 
-const ResultsView: React.FC<ResultsViewProps> = ({ 
-  recipes, 
-  onRecipeClick, 
-  onBack, 
-  isPremium, 
+const ResultsView: React.FC<ResultsViewProps> = ({
+  recipes,
+  onRecipeClick,
+  onBack,
+  isPremium,
   onGenerateMore,
-  loadingMore 
+  loadingMore
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   const filteredRecipes = useMemo(() => {
     if (!searchTerm.trim()) return recipes;
-    return recipes.filter(recipe => 
+    return recipes.filter(recipe =>
       recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       recipe.ingredients.some(ing => ing.toLowerCase().includes(searchTerm.toLowerCase()))
     );
@@ -55,8 +55,8 @@ const ResultsView: React.FC<ResultsViewProps> = ({
       {/* Search Bar */}
       <div className="relative mb-8">
         <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-zinc-500">search</span>
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Filtrar por nombre o ingrediente..."
@@ -67,14 +67,14 @@ const ResultsView: React.FC<ResultsViewProps> = ({
       <div className="space-y-6">
         {filteredRecipes.length > 0 ? (
           filteredRecipes.map((recipe) => (
-            <button 
+            <button
               key={recipe.id}
               onClick={() => onRecipeClick(recipe)}
               className="w-full glass-card rounded-2xl p-4 flex flex-col gap-4 border-primary/10 hover:border-primary/40 transition-all text-left relative overflow-hidden group"
             >
               {/* Background Image Preview */}
               <div className="absolute top-0 right-0 w-32 h-full opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                 <img src={recipe.imageUrl || `https://picsum.photos/seed/${recipe.id}/200/400`} alt="" className="w-full h-full object-cover" />
+                <img src={recipe.imageUrl || `https://picsum.photos/seed/${recipe.id}/200/400`} alt="" className="w-full h-full object-cover" />
               </div>
 
               <div className="flex gap-4 relative z-10">
@@ -123,15 +123,15 @@ const ResultsView: React.FC<ResultsViewProps> = ({
           ))
         ) : (
           <div className="text-center py-20 text-zinc-600">
-             <span className="material-symbols-outlined text-5xl opacity-20 mb-2">search_off</span>
-             <p className="text-sm font-bold uppercase tracking-widest">No se encontraron resultados</p>
+            <span className="material-symbols-outlined text-5xl opacity-20 mb-2">search_off</span>
+            <p className="text-sm font-bold uppercase tracking-widest">No se encontraron resultados</p>
           </div>
         )}
 
         {/* Generate More Button - Only shows if less than 15 recipes */}
         {recipes.length < 15 && !searchTerm && (
           <div className="pt-6">
-            <button 
+            <button
               onClick={handleGenerateMore}
               disabled={loadingMore}
               className="w-full bg-primary text-black font-black py-5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(57,255,20,0.4)] uppercase text-sm active:scale-95 transition-all disabled:opacity-50"
@@ -148,10 +148,10 @@ const ResultsView: React.FC<ResultsViewProps> = ({
 
       {/* Premium Modal */}
       {showPremiumModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-pure-black/90 backdrop-blur-md">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 bg-pure-black/90 backdrop-blur-md">
           <div className="w-full max-w-sm glass-card rounded-[2.5rem] p-8 border-primary/30 space-y-6 text-center shadow-[0_0_50px_rgba(57,255,20,0.1)]">
             <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center text-primary mx-auto neon-glow border border-primary/30">
-               <span className="material-symbols-outlined text-4xl">workspace_premium</span>
+              <span className="material-symbols-outlined text-4xl">workspace_premium</span>
             </div>
             <div className="space-y-3">
               <h3 className="text-2xl font-tech font-bold uppercase tracking-tight">Acceso Premium</h3>

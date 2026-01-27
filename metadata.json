@@ -1,5 +1,5 @@
 {
-  "name": "ChefCam.IA",
+  "name": "ChefScan.IA",
   "description": "Una aplicación culinaria impulsada por IA que transforma tus ingredientes en recetas gourmet mediante visión por computadora y lenguaje avanzado.",
   "requestFramePermissions": [
     "camera",

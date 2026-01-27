@@ -44,7 +44,7 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
   return (
     <div className="fixed inset-0 z-[100] bg-[#050B08] flex flex-col items-center justify-between p-8 overflow-hidden">
       {/* Back/Close button */}
-      <button 
+      <button
         onClick={onCancel}
         className="absolute top-12 left-8 text-white/60 hover:text-white transition-colors"
       >
@@ -57,7 +57,7 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
           {/* Decorative Rings */}
           <div className="absolute inset-0 border border-primary/10 rounded-full scale-110"></div>
           <div className="absolute inset-0 border border-primary/5 rounded-full scale-125"></div>
-          
+
           {/* Orbital dots */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary/40 rounded-full"></div>
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full neon-glow"></div>
@@ -66,19 +66,19 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
 
           {/* Main Dish Image Container */}
           <div className="w-full h-full rounded-full overflow-hidden border-4 border-zinc-900/50 shadow-[0_0_50px_rgba(57,255,20,0.15)] relative group">
-            <img 
-              src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=600" 
-              alt="Platillo" 
+            <img
+              src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=600"
+              alt="Platillo"
               className="w-full h-full object-cover scale-110 grayscale-[0.3] brightness-75"
             />
             {/* Pulsing Overlay */}
             <div className="absolute inset-0 bg-primary/10 animate-pulse-slow mix-blend-overlay"></div>
-            
-            {/* Robot Icon Overlay */}
+
+            {/* Logo Overlay */}
             <div className="absolute inset-0 flex items-center justify-center">
-               <div className="bg-primary/90 rounded-2xl p-4 shadow-strong animate-float">
-                  <span className="material-symbols-outlined text-black text-4xl font-black">smart_toy</span>
-               </div>
+              <div className="bg-primary/90 rounded-2xl p-2 shadow-strong animate-float">
+                <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-14 h-14 object-contain" />
+              </div>
             </div>
           </div>
 
@@ -102,22 +102,22 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
       <div className="w-full max-w-sm space-y-4 pb-12">
         <div className="flex justify-between items-end px-1">
           <div className="flex items-center gap-2 text-primary">
-            <span className="material-symbols-outlined text-xl">restaurant</span>
+            <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-5 h-5 object-contain" />
             <span className="text-xs font-bold uppercase tracking-widest">{statusLabel}</span>
           </div>
           <span className="text-xs font-tech text-zinc-500">{Math.floor(progress)}%</span>
         </div>
-        
+
         <div className="h-1.5 w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/5 relative">
-          <div 
-            className="h-full bg-primary rounded-full neon-glow transition-all duration-300" 
+          <div
+            className="h-full bg-primary rounded-full neon-glow transition-all duration-300"
             style={{ width: `${progress}%` }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent w-full animate-shimmer"></div>
           </div>
         </div>
 
-        <button 
+        <button
           onClick={onCancel}
           className="w-full text-zinc-600 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em] pt-4"
         >

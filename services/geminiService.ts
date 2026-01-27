@@ -2,13 +2,21 @@
 import { GoogleGenAI, Type, GenerateContentResponse, Modality } from "@google/genai";
 import { Recipe, Ingredient } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+
+const ai = new GoogleGenAI({
+  apiKey: API_KEY
+});
 
 export const analyzeIngredientImage = async (base64Image: string): Promise<Ingredient[]> => {
   const model = 'gemini-3-flash-preview';
-  
+
   const prompt = `Analiza esta imagen de comida. Identifica los ingredientes comestibles primarios. 
-    Devuelve el resultado como un arreglo JSON de objetos con 'name' (string), 'confidence' (number 0-100) y 'properties' (arreglo de strings como 'Orgánico', 'Grasas Saludables', 'Vitamina C').
+    Devuelve el resultado como un arreglo JSON de objetos con:
+    - 'name' (string)
+    - 'confidence' (number 0-100)
+    - 'properties' (arreglo de strings como 'Orgánico', 'Vitamina C')
+    - 'nutrients' (objeto con 'calories', 'protein', 'carbs', 'fat' como números estimativos por cada 100g).
     Sé conciso y solo incluye ingredientes claros. TODO EL TEXTO DEBE ESTAR EN ESPAÑOL.`;
 
   try {
@@ -40,6 +48,15 @@ export const analyzeIngredientImage = async (base64Image: string): Promise<Ingre
                 type: Type.ARRAY,
                 items: { type: Type.STRING },
                 description: "Propiedades o beneficios en español"
+              },
+              nutrients: {
+                type: Type.OBJECT,
+                properties: {
+                  calories: { type: Type.NUMBER },
+                  protein: { type: Type.NUMBER },
+                  carbs: { type: Type.NUMBER },
+                  fat: { type: Type.NUMBER }
+                }
               }
             },
             required: ["name", "confidence"]
@@ -56,12 +73,22 @@ export const analyzeIngredientImage = async (base64Image: string): Promise<Ingre
   }
 };
 
-export const generateRecipes = async (ingredients: string[], portions: number): Promise<Recipe[]> => {
+export const generateRecipes = async (
+  ingredients: string[],
+  portions: number,
+  isPremium: boolean = false,
+  allergies: string[] = [],
+  cookingGoal: string = 'explorar'
+): Promise<Recipe[]> => {
   const model = 'gemini-3-pro-preview';
-  
+
   const prompt = `Crea 5 recetas saludables y creativas usando principalmente estos ingredientes: ${ingredients.join(", ")}. 
     Las recetas deben ser para ${portions} porciones. 
+    ${allergies.length > 0 ? `IMPORTANTE: El usuario es ALÉRGICO a: ${allergies.join(", ")}. Por favor, EVITA estrictamente estos ingredientes y cualquier contaminante cruzado común.` : ""}
+    meta: ${cookingGoal}. Adapta las recetas para cumplir con esta meta (ej: bajo en calorías para bajar de peso, alto en proteína para ganar músculo).
     Incluye información nutricional (calorías, proteínas, carbohidratos, grasas), dificultad y tiempo de preparación.
+    SISTEMA NUTRISCORE: Evalúa la salud de la receta y asigna un 'nutriScore' de 'A' (muy saludable) a 'E' (menos saludable).
+    ${isPremium ? "SUGIERE también un arreglo de 2-3 'suggestedExtras' (ingredientes que el usuario NO mencionó pero que elevarían la receta a nivel gourmet)." : "NO sugieras ingredientes extra."}
     IMPORTANTE: Los títulos, la descripción, los nombres de los ingredientes y el modo de preparación DEBEN ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
     Formatea la salida como un arreglo JSON de objetos Recipe.`;
 
@@ -86,17 +113,27 @@ export const generateRecipes = async (ingredients: string[], portions: number): 
               protein: { type: Type.STRING },
               carbs: { type: Type.STRING },
               fat: { type: Type.STRING },
-              ingredients: { 
-                type: Type.ARRAY, 
-                items: { type: Type.STRING }, 
-                description: "Lista de ingredientes con cantidades en español" 
+              ingredients: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "Lista de ingredientes con cantidades en español"
               },
-              instructions: { 
-                type: Type.ARRAY, 
-                items: { type: Type.STRING }, 
-                description: "Pasos detallados de preparación en español" 
+              instructions: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "Pasos detallados de preparación en español"
               },
-              matchPercentage: { type: Type.NUMBER }
+              matchPercentage: { type: Type.NUMBER },
+              nutriScore: {
+                type: Type.STRING,
+                enum: ['A', 'B', 'C', 'D', 'E'],
+                description: "Calificación NutriScore de la receta"
+              },
+              suggestedExtras: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+                description: "Ingredientes extra sugeridos para mejorar la receta (Solo usuarios Premium)"
+              }
             },
             required: ["id", "title", "ingredients", "instructions"]
           }
@@ -111,11 +148,46 @@ export const generateRecipes = async (ingredients: string[], portions: number): 
   }
 };
 
-export const chatWithChef = async (history: { role: string; parts: string[] }[], message: string) => {
+export const checkIngredientsConsistency = async (ingredients: string[]): Promise<string | null> => {
+  if (ingredients.length < 2) return null;
+  const model = 'gemini-3-flash-preview';
+
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: [{
+        parts: [{
+          text: `Analiza esta lista de ingredientes: ${ingredients.join(", ")}. 
+      ¿Hay alguna inconsistencia grave (ej: pescado con chocolate) o alguna sugerencia rápida para mejorar la combinación? 
+      Responde en una sola frase corta (máximo 15 palabras) en español. Si todo está bien, responde 'OK'.` }]
+      }],
+    });
+
+    const text = response.text || "";
+    return text.includes("OK") ? null : text;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const chatWithChef = async (history: { role: string; parts: string[] }[], message: string, userContext?: any) => {
   const chat = ai.chats.create({
     model: 'gemini-3-pro-preview',
     config: {
-      systemInstruction: "Eres el Chef AI de ChefCam.IA. Ayudas a los usuarios con dudas sobre recetas, sustitución de ingredientes y consejos de cocina saludable. Eres amable, técnico pero accesible, y muy profesional. Responde SIEMPRE en español."
+      systemInstruction: `Eres el Maestro Chef AI de ChefScan.IA. Tu misión es elevar la experiencia culinaria del usuario. 
+      CARACTERÍSTICAS:
+      1. Eres un mentor de alta cocina: profesional, apasionado e inspiracional.
+      2. No solo das recetas, explicas el 'por qué' técnico (breves menciones a reacciones de Maillard, emulsiones, o puntos de cocción ideales).
+      3. Siempre sugieres sustituciones gourmet si falta un ingrediente.
+      4. Mantén tus respuestas concisas (máximo 2 párrafos) para facilitar la lectura en móviles.
+      5. Responde SIEMPRE en ESPAÑOL.
+      
+      CONTEXTO DEL USUARIO:
+      - Nombre: ${userContext?.name || 'Chef'}
+      - Alergias: ${userContext?.allergies?.join(', ') || 'Ninguna'}
+      - Meta Culinaria: ${userContext?.cookingGoal || 'Explorar'}
+      
+      Usa este contexto para personalizar tus consejos y EVITA ingredientes alérgicos.`
     }
   });
 
@@ -123,15 +195,26 @@ export const chatWithChef = async (history: { role: string; parts: string[] }[],
   return result.text;
 };
 
-export const processAudioInstruction = async (base64Audio: string, mimeType: string) => {
+export const processAudioInstruction = async (base64Audio: string, mimeType: string, userContext?: any) => {
   const model = 'gemini-3-flash-preview';
-  
+
   try {
     const response = await ai.models.generateContent({
       model,
       contents: {
         parts: [
-          { text: "Eres el Chef AI. Escucha la instrucción del usuario y responde de manera breve y profesional en ESPAÑOL. Si el usuario pide una receta o consejo, dáselo. Tu respuesta debe ser solo texto en español." },
+          {
+            text: `Eres el Maestro Chef AI. Escucha la instrucción del usuario. 
+          Responde de manera breve (máximo 40 palabras), profesional y llena de autoridad culinaria. 
+          Enfócate en consejos prácticos sobre técnicas o ingredientes. 
+          TODO EN ESPAÑOL.
+          
+          CONTEXTO DEL USUARIO:
+          - Nombre: ${userContext?.name || 'Chef'}
+          - Alergias: ${userContext?.allergies?.join(', ') || 'Ninguna'}
+          - Meta Culinaria: ${userContext?.cookingGoal || 'Explorar'}
+          
+          Adapta tu tono y consejos a este perfil.` },
           {
             inlineData: {
               mimeType,

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: http://chefscania.com/sitemap.xml

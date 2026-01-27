@@ -39,7 +39,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
     {
       id: '3',
       title: 'Actualización del Núcleo',
-      description: 'ChefCam Engine v2.5 ya está activo con mayor precisión visual.',
+      description: 'ChefScan Engine v2.5 ya está activo con mayor precisión visual.',
       time: 'Ayer',
       icon: 'developer_board',
       type: 'system',
@@ -75,9 +75,9 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
           <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 active:scale-90 transition-all">
             <span className="material-symbols-outlined text-primary">arrow_back</span>
           </button>
-          <h1 className="text-white font-bold text-xl uppercase tracking-wider font-outfit">Notificaciones</h1>
+          <h1 className="text-white font-bold text-xl uppercase tracking-wider font-outfit">Notificaciones<span className="text-primary">.IA</span></h1>
         </div>
-        <button 
+        <button
           onClick={markAllRead}
           className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline"
         >
@@ -91,11 +91,10 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
           <button
             key={filter}
             onClick={() => setActiveFilter(filter)}
-            className={`px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
-              activeFilter === filter 
-                ? 'bg-primary text-black shadow-neon-glow' 
-                : 'bg-zinc-900/50 text-zinc-500 border border-zinc-800'
-            }`}
+            className={`px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeFilter === filter
+              ? 'bg-primary text-black shadow-neon-glow'
+              : 'bg-zinc-900/50 text-zinc-500 border border-zinc-800'
+              }`}
           >
             {filter}
           </button>
@@ -106,18 +105,16 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
       <div className="space-y-4 pt-4">
         {filteredNotifications.length > 0 ? (
           filteredNotifications.map((notif) => (
-            <div 
+            <div
               key={notif.id}
-              className={`relative glass-card rounded-[1.5rem] p-4 flex gap-4 border transition-all ${
-                notif.unread ? 'border-primary/30 bg-primary/5' : 'border-white/5'
-              }`}
+              className={`relative glass-card rounded-[1.5rem] p-4 flex gap-4 border transition-all ${notif.unread ? 'border-primary/30 bg-primary/5' : 'border-white/5'
+                }`}
             >
-              <div className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center border ${
-                notif.unread ? 'bg-primary/20 border-primary text-primary shadow-neon-glow' : 'bg-zinc-900 border-zinc-800 text-zinc-600'
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center border ${notif.unread ? 'bg-primary/20 border-primary text-primary shadow-neon-glow' : 'bg-zinc-900 border-zinc-800 text-zinc-600'
+                }`}>
                 <span className="material-symbols-outlined">{notif.icon}</span>
               </div>
-              
+
               <div className="flex-1 space-y-1">
                 <div className="flex justify-between items-start">
                   <h3 className={`text-sm font-bold uppercase tracking-tight ${notif.unread ? 'text-white' : 'text-zinc-500'}`}>
@@ -139,15 +136,15 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
           ))
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-zinc-700 space-y-4">
-             <span className="material-symbols-outlined text-6xl opacity-20">notifications_off</span>
-             <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nada que reportar por ahora</p>
+            <span className="material-symbols-outlined text-6xl opacity-20">notifications_off</span>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nada que reportar por ahora</p>
           </div>
         )}
       </div>
 
       {/* Footer Info */}
       <div className="text-center pt-10">
-        <p className="text-[8px] text-zinc-800 font-bold uppercase tracking-[0.5em]">Sistema de Alertas ChefCam IA • Online</p>
+        <p className="text-[8px] text-zinc-800 font-bold uppercase tracking-[0.5em]">Sistema de Alertas ChefScan IA • Online</p>
       </div>
     </div>
   );

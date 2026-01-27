@@ -1,13 +1,44 @@
-
 <!DOCTYPE html>
 <html lang="es" class="dark">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChefCam.IA - Cocina Inteligente</title>
+  <title>ChefScan.IA - Cocina Inteligente</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description"
+    content="ChefScan.IA: Transforma tus ingredientes en recetas gourmet con inteligencia artificial avanzada." />
+
+  <!-- SEO & Canonical -->
+  <link rel="canonical" href="http://chefscania.com/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="http://chefscania.com/" />
+  <meta property="og:title" content="ChefScan.IA - Cocina Inteligente" />
+  <meta property="og:description"
+    content="Reconocimiento visual de ingredientes y generación de recetas personalizadas con IA." />
+  <meta property="og:image" content="http://chefscania.com/pwa-512.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="http://chefscania.com/" />
+  <meta property="twitter:title" content="ChefScan.IA - Cocina Inteligente" />
+  <meta property="twitter:description"
+    content="Reconocimiento visual de ingredientes y generación de recetas personalizadas con IA." />
+  <meta property="twitter:image" content="http://chefscania.com/pwa-512.png" />
+
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/pwa-192.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&family=Outfit:wght@400;600;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -59,18 +90,22 @@
       overflow-x: hidden;
       font-family: 'Inter', sans-serif;
     }
+
     .neon-glow {
       box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
     }
+
     .neon-text-glow {
       text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
     }
+
     .glass-card {
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
     .scanner-line {
       height: 2px;
       background: linear-gradient(to right, transparent, #39FF14, transparent);
@@ -79,19 +114,22 @@
       position: absolute;
       z-index: 30;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       display: none;
     }
+
     .custom-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
     /* Material Icons Fill */
     .fill-icon {
       font-variation-settings: 'FILL' 1;
     }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
@@ -101,10 +139,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
+
 <body class="antialiased">
   <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>
