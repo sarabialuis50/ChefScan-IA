@@ -10,13 +10,13 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, showNav = true, activeNav, onNavClick }) => {
   return (
-    <div className="flex flex-col min-h-screen w-full max-w-[430px] mx-auto bg-pure-black relative overflow-hidden font-body shadow-2xl">
-      <main className="flex-1 w-full overflow-y-auto pb-24 custom-scrollbar">
+    <div className="flex flex-col h-screen w-full max-w-[430px] mx-auto bg-pure-black relative overflow-hidden font-body shadow-2xl">
+      <main className="flex-1 w-full overflow-y-auto pb-32 custom-scrollbar">
         {children}
       </main>
 
       {showNav && (
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-black/95 backdrop-blur-xl border-t border-zinc-900 pb-10 pt-4 px-2 z-50">
+        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-black/80 backdrop-blur-xl border-t border-white/5 pb-10 pt-4 px-2 z-40">
           <div className="grid grid-cols-5 items-center h-16 relative">
             <NavItem
               icon="home"

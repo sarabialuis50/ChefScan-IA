@@ -77,7 +77,7 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
             {/* Logo Overlay */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="bg-primary/90 rounded-2xl p-2 shadow-strong animate-float">
-                <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-14 h-14 object-contain" />
+                <img src="/chefbot_final.png" alt="ChefScan AI" className="w-14 h-14 object-contain" />
               </div>
             </div>
           </div>
@@ -102,7 +102,7 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
       <div className="w-full max-w-sm space-y-4 pb-12">
         <div className="flex justify-between items-end px-1">
           <div className="flex items-center gap-2 text-primary">
-            <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-5 h-5 object-contain" />
+            <img src="/chefbot_final.png" alt="ChefScan AI" className="w-5 h-5 object-contain" />
             <span className="text-xs font-bold uppercase tracking-widest">{statusLabel}</span>
           </div>
           <span className="text-xs font-tech text-zinc-500">{Math.floor(progress)}%</span>

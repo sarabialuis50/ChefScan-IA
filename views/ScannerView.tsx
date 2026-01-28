@@ -175,7 +175,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
 
             <div className="relative flex flex-col items-center gap-4">
               <div className={`w-20 h-20 rounded-full border border-primary/20 ${!cameraError && !scanning ? 'animate-pulse-slow' : ''} flex items-center justify-center`}>
-                <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-14 h-14 object-contain opacity-90" />
+                <img src="/chefbot_final.png" alt="ChefScan AI" className="w-14 h-14 object-contain opacity-90" />
               </div>
 
               <div className="bg-surface-dark/80 backdrop-blur-md border border-primary/30 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-xl">

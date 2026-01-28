@@ -162,7 +162,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col bg-pure-black min-h-full p-5 space-y-8 pb-10 relative">
+    <div className="flex flex-col bg-pure-black p-5 space-y-4 relative">
       {/* Hidden File Input */}
       <input
         type="file"
@@ -172,49 +172,51 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         className="hidden"
       />
 
-      <div className="flex flex-col items-center gap-4 w-full">
-        <div className="w-16 h-16 bg-black border-2 border-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.3)] overflow-hidden">
-          {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-          ) : (
-            <img src="/logo.png" alt="ChefScan Logo" className="w-10 h-10 object-contain" />
-          )}
-        </div>
-        <div className="flex flex-col items-center text-center">
-          <span className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] leading-none mb-2">Panel de Control</span>
-          <h2 className="text-white font-bold text-2xl leading-none">Chef <span className="text-primary">{user?.name || 'Alejandro'}</span></h2>
+      <header className="flex justify-between items-center w-full pt-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-black border-2 border-primary rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(57,255,20,0.4)] overflow-hidden">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <img src="/chefbot_final.png" alt="ChefScan Logo" className="w-8 h-8 object-contain" />
+            )}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none mb-1">Bienvenido</span>
+            <h2 className="text-white font-bold text-lg leading-none">Chef <span className="text-primary">{user?.name || 'Alejandro'}</span></h2>
+            <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none mt-1.5">¿Qué vas a cocinar hoy?</span>
+          </div>
         </div>
 
-        {/* Botones de acción centrados */}
-        <div className="flex justify-center gap-3 w-full">
+        <div className="flex gap-2">
           <button
             onClick={onNotificationsClick}
-            className="w-11 h-11 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center relative active:scale-95 transition-all"
+            className="w-10 h-10 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center relative active:scale-95 transition-all"
           >
-            <span className="material-symbols-outlined text-zinc-400 notranslate">notifications</span>
+            <span className="material-symbols-outlined text-zinc-400 notranslate text-xl">notifications</span>
             <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-primary rounded-full neon-glow"></span>
           </button>
           <button
             onClick={onSettingsClick}
-            className="w-11 h-11 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center active:scale-95 transition-all"
+            className="w-10 h-10 bg-zinc-900/50 rounded-xl border border-white/5 flex items-center justify-center active:scale-95 transition-all"
           >
-            <span className="material-symbols-outlined text-zinc-400 notranslate">settings</span>
+            <span className="material-symbols-outlined text-zinc-400 notranslate text-xl">settings</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="text-center space-y-2 py-4 px-2">
-        <h1 className="text-4xl xs:text-5xl font-black tracking-tighter text-white leading-none">
+      <div className="space-y-1.5 pt-2">
+        <h1 className="text-4xl font-black tracking-tighter text-white leading-none">
           Chef<span className="text-primary">Scan.IA</span>
         </h1>
-        <p className="text-primary font-bold text-[9px] uppercase tracking-[0.25em] opacity-80 max-w-[280px] mx-auto">
+        <p className="text-primary font-bold text-[9px] uppercase tracking-[0.25em] opacity-80">
           Transforma tus ingredientes en obras maestras
         </p>
       </div>
 
       <section className="bg-[#0A0A0A] border border-zinc-800 rounded-[2rem] p-6 space-y-6 w-full">
-        <div className="flex flex-col items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-3xl notranslate">photo_camera</span>
+        <div className="flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-2xl notranslate">photo_camera</span>
           <h3 className="text-white font-bold uppercase tracking-[0.2em] text-[10px]">Imagen de ingredientes</h3>
         </div>
 
@@ -276,8 +278,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Suggested Recipes Section */}
       <section className="bg-[#0A0A0A] border border-zinc-800 rounded-[2rem] p-6 space-y-6 w-full">
-        <div className="flex flex-col items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-3xl notranslate">auto_awesome</span>
+        <div className="flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-2xl notranslate">auto_awesome</span>
           <h3 className="text-white font-bold uppercase tracking-[0.2em] text-[10px]">Recetas sugeridas</h3>
         </div>
 
@@ -349,7 +351,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         if (expiringItems.length === 0) return null;
 
         return (
-          <section className="space-y-4 pt-2">
+          <section className="space-y-4">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-white font-bold uppercase tracking-[0.15em] text-[11px]">Retos por Vencer</h3>
               <button
@@ -411,7 +413,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       })()}
 
       {/* Recent Discoveries */}
-      <section className="space-y-4 pt-2 pb-6">
+      <section className="space-y-4">
         <div className="flex justify-between items-center px-1">
           <h3 className="text-white font-bold uppercase tracking-[0.15em] text-[11px]">Recetas Favoritas</h3>
           <button onClick={() => onNavClick?.('favorites')} className="text-primary text-[10px] font-black uppercase tracking-tighter hover:underline">Ver más</button>
@@ -438,7 +440,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80"
                 />
               </div>
-              <p className="text-primary font-black text-[10px] uppercase tracking-widest text-center truncate px-2 group-hover:neon-text-glow">
+              <p className="text-primary font-black text-[9px] uppercase tracking-widest text-center px-1 leading-tight group-hover:neon-text-glow line-clamp-2 min-h-[1.5rem] flex items-center justify-center">
                 {recipe.title}
               </p>
             </button>

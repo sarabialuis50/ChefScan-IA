@@ -99,7 +99,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onLogout }) => {
       </section>
 
       <div className="flex flex-col items-center gap-3 mt-12 mb-4 opacity-30">
-        <img src="/logo.png" alt="ChefScan Logo" className="w-8 h-8 object-contain grayscale" />
+        <img src="/chefbot_final.png" alt="ChefScan Logo" className="w-8 h-8 object-contain grayscale" />
         <p className="text-center text-[8px] text-zinc-700 font-bold uppercase tracking-[0.4em]">ChefScan.IA — Premium Culinary System v2.5</p>
       </div>
     </div>

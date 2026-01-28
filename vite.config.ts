@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
         includeAssets: ['icon.png', 'pwa-192.png', 'pwa-512.png'],
         manifest: {
           name: 'ChefScan.IA',
-          short_name: 'ChefScan',
+          short_name: 'ChefScan.IA',
           description: 'Tu asistente de cocina inteligente con IA',
           theme_color: '#000000',
           background_color: '#000000',

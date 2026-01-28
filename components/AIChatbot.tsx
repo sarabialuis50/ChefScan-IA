@@ -231,27 +231,27 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Posicionado a la derecha sobre Comunidad */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`absolute bottom-28 right-6 w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.4)] hover:scale-110 active:scale-90 transition-all z-[60] animate-float ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+        className={`absolute bottom-28 right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.4)] hover:scale-110 active:scale-90 transition-all z-[90] animate-float ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
       >
-        <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-12 h-12 object-contain" />
+        <img src="/chefbot_final.png" alt="ChefScan AI" className="w-10 h-10 object-contain" />
         <span className="absolute -top-1 -right-1 flex h-4 w-4">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
           <span className="relative inline-flex rounded-full h-4 w-4 bg-white"></span>
         </span>
       </button>
 
-      {/* Chat Window */}
-      <div className={`absolute inset-0 z-[70] flex flex-col items-center justify-end p-4 transition-all duration-500 pointer-events-none ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Chat Window Container - z-[100] para estar sobre TODO */}
+      <div className={`absolute inset-0 flex flex-col items-center justify-end p-4 transition-all duration-500 pointer-events-none ${isOpen ? 'opacity-100 z-[100]' : 'opacity-0 z-[-1]'}`}>
         <div className={`w-full max-w-[400px] h-[600px] max-h-[80vh] bg-black border border-primary/30 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden pointer-events-auto transition-transform duration-500 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
 
           {/* Header */}
           <div className="bg-primary/5 p-6 border-b border-primary/20 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
-                <img src="/chatbot-logo.png" alt="ChefScan AI" className="w-8 h-8 object-contain" />
+                <img src="/chefbot_final.png" alt="ChefScan AI" className="w-10 h-10 object-contain" />
               </div>
               <div>
                 <h3 className="font-outfit font-black text-xl tracking-tighter text-white leading-none">

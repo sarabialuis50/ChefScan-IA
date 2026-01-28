@@ -817,7 +817,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center overflow-x-hidden">
-      <div className={`w-full min-h-screen relative flex flex-col items-center ${!isFullWidthView ? 'max-w-[430px] border-x border-white/5' : ''}`}>
+      <div className={`w-full h-screen relative overflow-hidden flex flex-col items-center ${!isFullWidthView ? 'max-w-[430px] border-x border-white/5' : ''}`}>
         {renderView()}
         {showChatbot && (
           <AIChatbot
