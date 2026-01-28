@@ -37,7 +37,7 @@ const App: React.FC = () => {
     recentRecipes: [],
     favoriteRecipes: [],
     recipeGenerationsToday: 0,
-    botQuestionsRemaining: 5,
+    chefCredits: 5,
     inventory: [],
     history: [],
     userTags: [],
@@ -231,7 +231,7 @@ const App: React.FC = () => {
       userTags: finalTags,
       // CRÍTICO: Solo redirigimos al dashboard si es la carga inicial o si explícitamente venimos de login
       currentView: isInitialLoad && (prev.currentView === 'landing' || prev.currentView === 'login') ? 'dashboard' : prev.currentView,
-      botQuestionsRemaining: finalUser.isPremium ? 15 : 5
+      chefCredits: finalUser.isPremium ? 999 : 5
     }));
   };
 
@@ -264,7 +264,7 @@ const App: React.FC = () => {
       ...prev,
       user,
       currentView: 'dashboard',
-      botQuestionsRemaining: user.isPremium ? 15 : 5
+      chefCredits: user.isPremium ? 999 : 5
     }));
   };
 
@@ -530,7 +530,7 @@ const App: React.FC = () => {
           recentRecipes: recipes,
           currentView: 'results',
           recipeGenerationsToday: prev.recipeGenerationsToday + 1,
-          botQuestionsRemaining: prev.user?.isPremium ? 15 : prev.botQuestionsRemaining,
+          chefCredits: prev.user?.isPremium ? 999 : prev.chefCredits,
           history: [
             {
               id: savedRecipeId,
@@ -906,8 +906,9 @@ const App: React.FC = () => {
           <AIChatbot
             isPremium={state.user?.isPremium}
             user={state.user}
-            remainingQuestions={state.botQuestionsRemaining}
-            onQuestionAsked={() => setState(prev => ({ ...prev, botQuestionsRemaining: Math.max(0, prev.botQuestionsRemaining - 1) }))}
+            chefCredits={state.chefCredits}
+            onUseCredit={() => setState(prev => ({ ...prev, chefCredits: Math.max(0, prev.chefCredits - 1) }))}
+            onAddCredits={() => setState(prev => ({ ...prev, chefCredits: prev.chefCredits + 3 }))}
             onShowPremium={() => setPremiumModal({ isOpen: true, reason: 'chefbot' })}
           />
         )}

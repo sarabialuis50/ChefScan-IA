@@ -40,16 +40,18 @@ async function decodeAudioData(
 interface AIChatbotProps {
   isPremium?: boolean;
   user?: any;
-  remainingQuestions: number;
-  onQuestionAsked: () => void;
+  chefCredits: number;
+  onUseCredit: () => void;
+  onAddCredits: () => void;
   onShowPremium: () => void;
 }
 
 const AIChatbot: React.FC<AIChatbotProps> = ({
   isPremium,
   user,
-  remainingQuestions,
-  onQuestionAsked,
+  chefCredits,
+  onUseCredit,
+  onAddCredits,
   onShowPremium
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +62,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isWatchingAd, setIsWatchingAd] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -95,10 +98,8 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
-    if (remainingQuestions <= 0) {
-      onShowPremium();
+    if (chefCredits <= 0 && !isPremium) {
+      // Don't auto-show premium modal, let the UI show credits exhausted
       return;
     }
 
@@ -106,7 +107,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
     setIsLoading(true);
-    onQuestionAsked();
+    if (!isPremium) onUseCredit();
 
     try {
       const history = messages.map(msg => ({
@@ -131,8 +132,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
   };
 
   const startRecording = async () => {
-    if (remainingQuestions <= 0) {
-      onShowPremium();
+    if (chefCredits <= 0 && !isPremium) {
       return;
     }
     try {
@@ -163,7 +163,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
           const response = await processAudioInstruction(base64Audio, 'audio/webm', userContext);
           setMessages(prev => [...prev, { role: 'model', text: response || 'No pude entender el audio.' }]);
           setIsLoading(false);
-          onQuestionAsked();
+          if (!isPremium) onUseCredit();
         };
         stream.getTracks().forEach(track => track.stop());
       };
@@ -229,6 +229,15 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
     }
   };
 
+  const handleWatchAd = () => {
+    setIsWatchingAd(true);
+    // Simulate Ad playback
+    setTimeout(() => {
+      onAddCredits();
+      setIsWatchingAd(false);
+    }, 3000);
+  };
+
   return (
     <>
       {/* Floating Action Button - Posicionado a la derecha sobre Comunidad */}
@@ -258,8 +267,9 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                   Chef<span className="text-primary">Scan.IA</span>
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <div className={`px-2 py-0.5 rounded-full border ${remainingQuestions > 0 ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-red-500/10 border-red-500/30 text-red-500'} text-[8px] font-black uppercase tracking-tighter shadow-sm`}>
-                    {remainingQuestions} Consultas {remainingQuestions === 1 ? 'restante' : 'restantes'}
+                  <div className={`px-2 py-0.5 rounded-full border ${isPremium || chefCredits > 0 ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-red-500/10 border-red-500/30 text-red-500'} text-[8px] font-black uppercase tracking-tighter shadow-sm flex items-center gap-1`}>
+                    <span className="material-symbols-outlined text-[10px]">workspace_premium</span>
+                    {isPremium ? 'Créditos Ilimitados' : `${chefCredits} Créditos de Chef`}
                   </div>
                   {isPremium && <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest leading-none">PRO Plan</span>}
                 </div>
@@ -275,6 +285,43 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            {chefCredits <= 0 && !isPremium && (
+              <div className="bg-zinc-900/80 border border-primary/20 p-6 rounded-3xl text-center space-y-4 animate-in fade-in zoom-in duration-300">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                  <span className="material-symbols-outlined text-primary">analytics</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-black uppercase text-white tracking-widest">Créditos Agotados</h4>
+                  <p className="text-[10px] text-zinc-400 mt-1">¿Te quedaste sin Sabiduría de Chef? Consigue más:</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2 pt-2">
+                  <button
+                    onClick={handleWatchAd}
+                    disabled={isWatchingAd}
+                    className="w-full py-4 bg-primary text-black font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-glow flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    {isWatchingAd ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                        Viendo Anuncio...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-sm">play_circle</span>
+                        Ver Anuncio (+3 Créditos)
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={onShowPremium}
+                    className="w-full py-4 bg-zinc-800 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-sm text-primary">stars</span>
+                    Pasar a Premium (Ilimitado)
+                  </button>
+                </div>
+              </div>
+            )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className="flex flex-col gap-1 max-w-[85%]">
@@ -321,9 +368,9 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                  placeholder={isRecording ? "Escuchando..." : "Pregunta algo al Chef..."}
+                  placeholder={isRecording ? "Escuchando..." : (chefCredits <= 0 && !isPremium ? "Sin créditos..." : "Pregunta algo al Chef...")}
                   className="w-full bg-black border border-zinc-800 rounded-2xl py-4 pl-4 pr-14 text-sm text-white placeholder-zinc-600 focus:border-primary/50 transition-all outline-none"
-                  disabled={isRecording}
+                  disabled={isRecording || (chefCredits <= 0 && !isPremium)}
                 />
                 <button
                   onClick={handleSend}

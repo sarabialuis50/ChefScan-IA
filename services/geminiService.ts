@@ -10,7 +10,7 @@ const ai = new GoogleGenAI({
 });
 
 export const analyzeIngredientImage = async (base64Image: string): Promise<Ingredient[]> => {
-  const model = 'gemini-3-flash-preview';
+  const model = 'gemini-1.5-flash';
 
   const prompt = `Analiza esta imagen de comida. Identifica los ingredientes comestibles primarios. 
     Devuelve el resultado como un arreglo JSON de objetos con:
@@ -81,7 +81,7 @@ export const generateRecipes = async (
   allergies: string[] = [],
   cookingGoal: string = 'explorar'
 ): Promise<Recipe[]> => {
-  const model = 'gemini-3-pro-preview';
+  const model = 'gemini-1.5-pro';
 
   const prompt = `Crea 5 recetas saludables y creativas usando principalmente estos ingredientes: ${ingredients.join(", ")}. 
     Las recetas deben ser para ${portions} porciones. 
@@ -161,7 +161,7 @@ export const generateRecipes = async (
 
 export const checkIngredientsConsistency = async (ingredients: string[]): Promise<string | null> => {
   if (ingredients.length < 2) return null;
-  const model = 'gemini-3-flash-preview';
+  const model = 'gemini-1.5-flash';
 
   try {
     const response = await ai.models.generateContent({
@@ -182,8 +182,13 @@ export const checkIngredientsConsistency = async (ingredients: string[]): Promis
 };
 
 export const chatWithChef = async (history: { role: string; parts: string[] }[], message: string, userContext?: any) => {
+  // Detect complexity to switch models
+  const complexKeywords = ['menú', 'plan', 'química', 'científico', 'técnica avanzada', 'explicación profunda', 'diseñar'];
+  const isComplex = complexKeywords.some(kw => message.toLowerCase().includes(kw));
+  const modelToUse = isComplex ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+
   const chat = ai.chats.create({
-    model: 'gemini-3-pro-preview',
+    model: modelToUse,
     config: {
       systemInstruction: `Eres el Maestro Chef AI de ChefScan.IA. Tu misión es elevar la experiencia culinaria del usuario. 
       CARACTERÍSTICAS:
@@ -207,7 +212,7 @@ export const chatWithChef = async (history: { role: string; parts: string[] }[],
 };
 
 export const processAudioInstruction = async (base64Audio: string, mimeType: string, userContext?: any) => {
-  const model = 'gemini-3-flash-preview';
+  const model = 'gemini-1.5-flash';
 
   try {
     const response = await ai.models.generateContent({
@@ -246,7 +251,7 @@ export const processAudioInstruction = async (base64Audio: string, mimeType: str
 export const generateSpeech = async (text: string): Promise<string | undefined> => {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
+      model: "gemini-1.5-flash", // Use flash for TTS if possible or supported
       contents: [{ parts: [{ text: `Di de forma clara y profesional en español: ${text}` }] }],
       config: {
         responseModalities: [Modality.AUDIO],

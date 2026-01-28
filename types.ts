@@ -83,7 +83,7 @@ export interface AppState {
   recentRecipes: Recipe[];
   favoriteRecipes: Recipe[];
   recipeGenerationsToday: number;
-  botQuestionsRemaining: number;
+  chefCredits: number;
   inventory: InventoryItem[];
   scannedImage?: string;
   history: any[];
