@@ -29,7 +29,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
         <div className="flex flex-col items-center gap-3 mb-10 relative z-10">
           <div className="relative group">
             <div className="absolute -inset-4 bg-[#39FF14]/20 blur-xl rounded-full opacity-100"></div>
-            <img src="/chefbot_final.png" alt="ChefScan" className="h-16 w-16 relative z-10" />
+            <img src="/landing-logo.png" alt="ChefScan" className="h-14 w-auto relative z-10" />
           </div>
           <h1 className="font-outfit font-black text-2xl tracking-tighter text-white">
             ChefScan<span className="text-[#39FF14]">.IA</span>
@@ -128,9 +128,9 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
             <div className="relative">
               <div className="absolute -inset-2 bg-[#39FF14]/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
               <img
-                src="/chefbot_final.png"
+                src="/landing-logo.png"
                 alt="ChefScan"
-                className="h-12 w-12 relative z-10 transition-transform duration-500 group-hover:scale-110"
+                className="h-12 w-auto relative z-10 transition-transform duration-500 group-hover:scale-110"
               />
             </div>
             <div className="flex flex-col">

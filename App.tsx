@@ -632,6 +632,7 @@ const App: React.FC = () => {
               onAddItem={handleInventoryAdd}
               inventory={state.inventory}
               acceptedChallengeId={state.acceptedChallengeId}
+              onBack={() => navigateTo('landing')}
             />
           </Layout>
         );

@@ -23,6 +23,7 @@ interface DashboardViewProps {
   onAddItem?: (name: string, quantity: number, unit: string, expiryDate?: string) => void;
   inventory?: any[];
   acceptedChallengeId?: string | null;
+  onBack?: () => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -42,7 +43,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   onComplete,
   onAddItem,
   inventory = [],
-  acceptedChallengeId
+  acceptedChallengeId,
+  onBack
 }) => {
   const [manualInput, setManualInput] = useState('');
   const [portions, setPortions] = useState(2);
@@ -178,7 +180,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </header>
 
-      <div className="space-y-1.5 pt-2">
+      <div className="space-y-1.5 pt-2 relative">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="absolute -top-1 right-0 text-zinc-600 hover:text-white transition-colors"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+          </button>
+        )}
         <h1 className="text-4xl font-black tracking-tighter text-white leading-none">
           Chef<span className="text-primary">Scan.IA</span>
         </h1>
