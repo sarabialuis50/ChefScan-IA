@@ -273,7 +273,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary opacity-60">edit_note</span>
               <input
                 type="text"
-                placeholder="Ej: pollo, arroz, verduras"
+                placeholder="Ej: pollo, arroz, aguacate"
                 value={manualInput}
                 onChange={(e) => setManualInput(e.target.value)}
                 className="w-full bg-black border border-primary/40 rounded-2xl py-5 pl-12 pr-4 text-sm text-white placeholder-zinc-700 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
