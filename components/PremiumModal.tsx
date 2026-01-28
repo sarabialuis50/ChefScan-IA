@@ -78,7 +78,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
 
                 <div className="grid gap-3 pt-2">
                     <button className="w-full py-4 bg-primary text-black rounded-xl font-bold uppercase text-xs tracking-widest neon-glow shadow-strong active:scale-95 transition-all">
-                        Subir a Premium • $19.900 IVA Incluido/mes
+                        Subir a Premium • $19.900 COP/mes
                     </button>
                     <button onClick={onClose} className="w-full py-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
                         Tal vez más tarde

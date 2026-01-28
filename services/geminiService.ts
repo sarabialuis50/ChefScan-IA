@@ -203,7 +203,12 @@ export const chatWithChef = async (history: { role: string; parts: string[] }[],
       - Alergias: ${userContext?.allergies?.join(', ') || 'Ninguna'}
       - Meta Culinaria: ${userContext?.cookingGoal || 'Explorar'}
       
-      Usa este contexto para personalizar tus consejos y EVITA ingredientes alérgicos.`
+      Usa este contexto para personalizar tus consejos y EVITA ingredientes alérgicos.
+      
+      CONOCIMIENTO DE LA APP CHEFSCAN.IA (Para Soporte):
+      - Plan Premium: Cuesta $19.900 COP/mes. Incluye: ChefBot Ilimitado, 90 recetas/día, Despensa de 30 ítems, NutriScore completo, Guardar Favoritos.
+      - Plan Free: Límite de 2 consultas diarias (10 recetas), Despensa de 5 ítems, 10 créditos de ChefBot, Sin favoritos.
+      - Si el usuario pregunta por límites o cómo mejorar, explícale las ventajas de Premium amablemente.`
     }
   });
 
@@ -220,15 +225,15 @@ export const processAudioInstruction = async (base64Audio: string, mimeType: str
       contents: {
         parts: [
           {
-            text: `Eres el Maestro Chef AI. Escucha la instrucción del usuario. 
-          Responde de manera breve (máximo 40 palabras), profesional y llena de autoridad culinaria. 
+            text: `Eres el Maestro Chef AI.Escucha la instrucción del usuario. 
+          Responde de manera breve(máximo 40 palabras), profesional y llena de autoridad culinaria. 
           Enfócate en consejos prácticos sobre técnicas o ingredientes. 
           TODO EN ESPAÑOL.
           
           CONTEXTO DEL USUARIO:
-          - Nombre: ${userContext?.name || 'Chef'}
-          - Alergias: ${userContext?.allergies?.join(', ') || 'Ninguna'}
-          - Meta Culinaria: ${userContext?.cookingGoal || 'Explorar'}
+        - Nombre: ${userContext?.name || 'Chef'}
+- Alergias: ${userContext?.allergies?.join(', ') || 'Ninguna'}
+- Meta Culinaria: ${userContext?.cookingGoal || 'Explorar'}
           
           Adapta tu tono y consejos a este perfil.` },
           {
@@ -252,7 +257,7 @@ export const generateSpeech = async (text: string): Promise<string | undefined> 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-1.5-flash", // Use flash for TTS if possible or supported
-      contents: [{ parts: [{ text: `Di de forma clara y profesional en español: ${text}` }] }],
+      contents: [{ parts: [{ text: `Di de forma clara y profesional en español: ${text} ` }] }],
       config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {

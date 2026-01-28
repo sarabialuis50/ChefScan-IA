@@ -269,7 +269,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
         <div className="space-y-5">
           <div className="space-y-2">
-            <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest block ml-1">Entrada manual:</label>
+            <label className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest block ml-1">
+              Entrada manual: <span className="text-[9px] text-zinc-600 font-medium normal-case">(verifica la ortografía)</span>
+            </label>
             <div className="relative group">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary opacity-60">edit_note</span>
               <input

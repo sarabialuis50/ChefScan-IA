@@ -7,9 +7,14 @@ interface SettingsViewProps {
     user: any;
     onUpdateUser: (updates: any) => void;
     onLogout: () => void;
+    stats: {
+        recipes: number;
+        favorites: number;
+        generated: number;
+    };
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser, onLogout }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser, onLogout, stats }) => {
     const [notifications, setNotifications] = useState(true);
     const [autoSave, setAutoSave] = useState(false);
     const [language, setLanguage] = useState('Español');
@@ -153,18 +158,17 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
                     </p>
                 </div>
 
-                {/* Estadísticas */}
                 <div className="grid grid-cols-3 gap-8 pt-2">
                     <div className="text-center">
-                        <p className="text-primary font-black text-lg">0</p>
-                        <p className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Recetas</p>
+                        <p className="text-primary font-black text-lg">{stats.recipes}</p>
+                        <p className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Despensa</p>
                     </div>
                     <div className="text-center border-x border-white/5 px-8">
-                        <p className="text-primary font-black text-lg">1</p>
+                        <p className="text-primary font-black text-lg">{stats.favorites}</p>
                         <p className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Favoritas</p>
                     </div>
                     <div className="text-center">
-                        <p className="text-primary font-black text-lg">0</p>
+                        <p className="text-primary font-black text-lg">{stats.generated}</p>
                         <p className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">Generadas</p>
                     </div>
                 </div>
@@ -273,12 +277,35 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
                             <div>
                                 <p className="text-white text-sm font-bold uppercase tracking-tight">Estado: {user?.isPremium ? 'PREMIUM' : 'FREE'}</p>
                                 <p className={`${user?.isPremium ? 'text-zinc-500' : 'text-primary'} text-[10px] font-black uppercase tracking-widest`}>
-                                    {user?.isPremium ? 'Soporte Prioritario Activo' : 'Sube a Premium hoy'}
+                                    {user?.isPremium ? 'Soporte Prioritario Activo' : 'Sube a Premium • $19.900/mes'}
                                 </p>
                             </div>
                         </div>
                         {!user?.isPremium && <span className="material-symbols-outlined text-primary">chevron_right</span>}
                     </button>
+
+                    {/* Soporte */}
+                    <div className="w-full p-4 rounded-3xl border border-white/5 bg-zinc-900/40 flex flex-col gap-3">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shadow-glow">
+                                <span className="material-symbols-outlined">support_agent</span>
+                            </div>
+                            <div>
+                                <p className="text-white text-sm font-bold uppercase tracking-tight">Soporte</p>
+                                <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">¿Necesitas ayuda?</p>
+                            </div>
+                        </div>
+                        <div className="grid gap-2 pl-14">
+                            <a href="mailto:info@chefscania.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-xs">mail</span>
+                                <span className="text-[10px] font-bold tracking-widest">info@chefscania.com</span>
+                            </a>
+                            <a href="https://wa.me/573017810256" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-green-400 transition-colors">
+                                <span className="material-symbols-outlined text-xs">chat</span>
+                                <span className="text-[10px] font-bold tracking-widest">+57 301 781 0256 (WhatsApp)</span>
+                            </a>
+                        </div>
+                    </div>
 
                     <div className="flex items-center justify-between p-4 bg-zinc-900/40 rounded-3xl border border-white/5">
                         <div className="flex items-center gap-4">
