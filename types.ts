@@ -26,7 +26,7 @@ export interface Recipe {
   instructions: string[];
   imageUrl?: string;
   matchPercentage: number;
-  category?: 'Desayuno' | 'Almuerzo' | 'Cena' | 'Saludable';
+  category?: string;
   suggestedExtras?: string[];
   nutriScore?: 'A' | 'B' | 'C' | 'D' | 'E';
   photoQuery?: string;
@@ -86,11 +86,7 @@ export interface AppState {
   botQuestionsRemaining: number;
   inventory: InventoryItem[];
   scannedImage?: string;
-  history: {
-    ingredient: string;
-    recipe: string;
-    date: string;
-    time: string;
-    imageUrl?: string;
-  }[];
+  history: any[];
+  userTags: string[];
+  acceptedChallengeId: string | null;
 }

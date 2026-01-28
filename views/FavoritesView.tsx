@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Recipe } from '../types';
 import { getRecipeImage } from '../utils/imageUtils';
 
 interface FavoritesViewProps {
   recipes: (Recipe & { category?: string })[];
+  userTags?: string[];
   onRecipeClick: (recipe: Recipe) => void;
   onBack: () => void;
 }
@@ -29,11 +30,39 @@ const ImageWithPlaceholder: React.FC<{ recipe: Recipe, alt: string }> = ({ recip
   );
 };
 
-const FavoritesView: React.FC<FavoritesViewProps> = ({ recipes, onRecipeClick, onBack }) => {
+const FavoritesView: React.FC<FavoritesViewProps> = ({ recipes, onRecipeClick, onBack, userTags = [] }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('Todo');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
-  const categories = ['Todo', 'Desayuno', 'Almuerzo', 'Cena', 'Saludable', 'Otra'];
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // scroll-fast factor
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const defaultCategories = ['Todo', 'Desayuno', 'Almuerzo', 'Cena', 'Saludable', 'Vegana'];
+  const allCategories = [...new Set([...defaultCategories, ...userTags])];
 
   const filteredRecipes = useMemo(() => {
     return recipes.filter(item => {
@@ -76,15 +105,28 @@ const FavoritesView: React.FC<FavoritesViewProps> = ({ recipes, onRecipeClick, o
           />
         </div>
 
-        {/* Categories Tabs - Grid structure to fit all 6 in one row */}
-        <div className="grid grid-cols-6 gap-1 w-full">
-          {categories.map(cat => (
+        {/* Categories Tabs - Scrollable structure to fit many tags */}
+        <div
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          className={`flex gap-2 overflow-x-auto pb-4 px-1 custom-scrollbar w-full no-scrollbar select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab active:cursor-grabbing'}`}
+        >
+          {allCategories.map(cat => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`py-2 rounded-lg text-[7.5px] font-black uppercase tracking-tighter text-center transition-all ${activeCategory === cat
-                ? 'bg-primary text-black shadow-md shadow-primary/20'
-                : 'bg-zinc-900/50 text-zinc-500 border border-white/5 hover:border-white/10'
+              onClick={() => {
+                if (!isDragging) setActiveCategory(cat);
+              }}
+              onMouseUp={() => {
+                // Prevent click trigger if we were dragging
+                // (Optional refinement, but help with UX)
+              }}
+              className={`flex-shrink-0 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-center transition-all border pointer-events-auto ${activeCategory === cat
+                ? 'bg-primary border-primary text-black shadow-lg shadow-primary/20 scale-105'
+                : 'bg-zinc-900/50 text-zinc-500 border-white/5 hover:border-white/10'
                 }`}
             >
               {cat}

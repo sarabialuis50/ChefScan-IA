@@ -11,11 +11,18 @@ interface RecipeDetailViewProps {
   onStartCooking?: () => void;
   onShare?: () => void;
   isPremium?: boolean;
+  onCreateTag?: (tag: string) => void;
+  onUpdateTag?: (oldName: string, newName: string) => void;
+  onDeleteTag?: (tag: string) => void;
 }
 
-const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite, onToggleFavorite, onBack, onNutritionClick, onStartCooking, onShare, isPremium }) => {
+const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite, onToggleFavorite, onBack, onNutritionClick, onStartCooking, onShare, isPremium, userTags = [], onCreateTag, onUpdateTag, onDeleteTag }) => {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
+  const [isAddingNewTag, setIsAddingNewTag] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [tagMenuOpen, setTagMenuOpen] = useState<string | null>(null);
+  const [editingTag, setEditingTag] = useState<{ oldName: string, newName: string } | null>(null);
 
   if (!recipe) return null;
 
@@ -26,7 +33,39 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
     }
   };
 
-  const categories = ['Desayuno', 'Almuerzo', 'Cena', 'Saludable', 'Otra'];
+  const defaultCategories = ['Desayuno', 'Almuerzo', 'Cena', 'Saludable', 'Vegana'];
+  const allCategories = [...new Set([...defaultCategories, ...userTags])];
+
+  const handleCreateTag = () => {
+    if (newTagName.trim() && onCreateTag) {
+      onCreateTag(newTagName.trim());
+      onToggleFavorite(newTagName.trim());
+      setNewTagName('');
+      setIsAddingNewTag(false);
+      setShowTagModal(false);
+    }
+  };
+
+  const handleUpdateTagClick = (e: React.MouseEvent, oldName: string) => {
+    e.stopPropagation();
+    setEditingTag({ oldName, newName: oldName });
+    setTagMenuOpen(null);
+  };
+
+  const handleDeleteTagClick = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation();
+    if (confirm(`¿Estás seguro de que quieres eliminar la etiqueta "${tag}"?`)) {
+      if (onDeleteTag) onDeleteTag(tag);
+      setTagMenuOpen(null);
+    }
+  };
+
+  const submitUpdateTag = () => {
+    if (editingTag && editingTag.newName.trim() && onUpdateTag) {
+      onUpdateTag(editingTag.oldName, editingTag.newName.trim());
+      setEditingTag(null);
+    }
+  };
 
   const handleToggleFavorite = () => {
     // Para pruebas permitimos usar etiquetas sin ser premium
@@ -223,20 +262,110 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
               <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest">Organiza tu receta favoritas por etiqueta</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => selectCategory(cat)}
-                  className="py-5 px-4 bg-zinc-900/50 border border-white/5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all active:scale-95"
-                >
-                  {cat}
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+              {allCategories.map((cat) => {
+                const isCustom = userTags.includes(cat);
+                return (
+                  <div key={cat} className="relative group/tag">
+                    <button
+                      onClick={() => selectCategory(cat)}
+                      className="w-full py-5 px-4 bg-zinc-900/50 border border-white/5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all active:scale-95"
+                    >
+                      {cat}
+                    </button>
+
+                    {isCustom && (
+                      <div className="absolute top-2 right-2 flex items-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTagMenuOpen(tagMenuOpen === cat ? null : cat);
+                          }}
+                          className="w-6 h-6 rounded-full bg-black/40 flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">more_vert</span>
+                        </button>
+
+                        {tagMenuOpen === cat && (
+                          <div className="absolute top-8 right-0 w-32 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in duration-200">
+                            <button
+                              onClick={(e) => handleUpdateTagClick(e, cat)}
+                              className="w-full py-3 px-4 text-[10px] font-bold text-left hover:bg-white/5 flex items-center gap-2 border-b border-white/5"
+                            >
+                              <span className="material-symbols-outlined text-sm">edit</span>
+                              EDITAR
+                            </button>
+                            <button
+                              onClick={(e) => handleDeleteTagClick(e, cat)}
+                              className="w-full py-3 px-4 text-[10px] font-bold text-left hover:bg-red-500/10 text-red-500 flex items-center gap-2"
+                            >
+                              <span className="material-symbols-outlined text-sm">delete</span>
+                              ELIMINAR
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <button
+                onClick={() => setIsAddingNewTag(true)}
+                className="py-5 px-4 bg-primary/10 border border-primary/30 rounded-2xl text-xs font-black uppercase tracking-widest text-primary flex items-center justify-center gap-2 hover:bg-primary/20 transition-all active:scale-95 shadow-glow-subtle"
+              >
+                <span className="material-symbols-outlined text-sm font-black">add</span>
+                Nueva
+              </button>
             </div>
 
+            {editingTag && (
+              <div className="space-y-4 animate-in slide-in-from-top-4 duration-300 bg-zinc-900/80 p-6 rounded-3xl border border-primary/20">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Renombrar Etiqueta</p>
+                  <button onClick={() => setEditingTag(null)} className="material-symbols-outlined text-zinc-600">close</button>
+                </div>
+                <input
+                  autoFocus
+                  type="text"
+                  value={editingTag.newName}
+                  onChange={(e) => setEditingTag({ ...editingTag, newName: e.target.value })}
+                  className="w-full bg-black border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:border-primary outline-none"
+                  onKeyDown={(e) => { if (e.key === 'Enter') submitUpdateTag(); }}
+                />
+                <button
+                  onClick={submitUpdateTag}
+                  className="w-full py-4 bg-primary text-black font-black rounded-xl uppercase text-[10px] tracking-widest shadow-glow"
+                >
+                  Confirmar Cambio
+                </button>
+              </div>
+            )}
+
+            {isAddingNewTag && (
+              <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Nombre de la etiqueta..."
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleCreateTag(); }}
+                />
+                <button
+                  onClick={handleCreateTag}
+                  className="w-full py-4 bg-primary text-black font-black rounded-xl uppercase text-[10px] tracking-widest shadow-glow"
+                >
+                  Crear y Guardar
+                </button>
+              </div>
+            )}
+
             <button
-              onClick={() => setShowTagModal(false)}
+              onClick={() => {
+                setShowTagModal(false);
+                setIsAddingNewTag(false);
+              }}
               className="w-full py-4 text-zinc-600 font-bold uppercase text-[9px] tracking-[0.3em]"
             >
               Cancelar

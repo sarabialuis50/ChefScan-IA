@@ -40,6 +40,7 @@ const App: React.FC = () => {
     botQuestionsRemaining: 5,
     inventory: [],
     history: [],
+    userTags: [],
     acceptedChallengeId: null
   });
 
@@ -190,6 +191,9 @@ const App: React.FC = () => {
     const { data: favs } = await supabase.from('favorites').select('*, recipes(*)').eq('user_id', userId);
     const { data: hist } = await supabase.from('history').select('*, recipes(*)').eq('user_id', userId).order('created_at', { ascending: false });
     const { data: inv } = await supabase.from('inventory').select('*').eq('user_id', userId).order('expiry_date', { ascending: true });
+    const { data: utags } = await supabase.from('user_tags').select('name').eq('user_id', userId);
+
+    const finalTags = utags?.map((t: any) => t.name) || [];
 
     setState(prev => ({
       ...prev,
@@ -224,6 +228,7 @@ const App: React.FC = () => {
           nutriScore: h.recipes.nutri_score
         } : null
       })) || []),
+      userTags: finalTags,
       // CRÍTICO: Solo redirigimos al dashboard si es la carga inicial o si explícitamente venimos de login
       currentView: isInitialLoad && (prev.currentView === 'landing' || prev.currentView === 'login') ? 'dashboard' : prev.currentView,
       botQuestionsRemaining: finalUser.isPremium ? 15 : 5
@@ -295,6 +300,75 @@ const App: React.FC = () => {
       setState(prev => ({
         ...prev,
         user: prev.user ? { ...prev.user, ...updates } : null
+      }));
+    }
+  };
+
+  const handleCreateTag = async (tagName: string) => {
+    if (!state.user?.id || !tagName.trim()) return;
+
+    // Evitar duplicados
+    if (state.userTags.includes(tagName.trim())) return;
+
+    const { error } = await supabase
+      .from('user_tags')
+      .insert({ user_id: state.user.id, name: tagName.trim() });
+
+    if (!error) {
+      setState(prev => ({
+        ...prev,
+        userTags: [...prev.userTags, tagName.trim()]
+      }));
+    }
+  };
+
+  const handleUpdateTag = async (oldName: string, newName: string) => {
+    if (!state.user?.id || !newName.trim()) return;
+
+    // update in user_tags table
+    const { error: tagError } = await supabase
+      .from('user_tags')
+      .update({ name: newName.trim() })
+      .eq('user_id', state.user.id)
+      .eq('name', oldName);
+
+    if (!tagError) {
+      // also update in favorites table to maintain consistency
+      await supabase
+        .from('favorites')
+        .update({ category: newName.trim() })
+        .eq('user_id', state.user.id)
+        .eq('category', oldName);
+
+      setState(prev => ({
+        ...prev,
+        userTags: prev.userTags.map(t => t === oldName ? newName.trim() : t),
+        favoriteRecipes: prev.favoriteRecipes.map(r => r.category === oldName ? { ...r, category: newName.trim() } : r)
+      }));
+    }
+  };
+
+  const handleDeleteTag = async (tagName: string) => {
+    if (!state.user?.id) return;
+
+    const { error: tagError } = await supabase
+      .from('user_tags')
+      .delete()
+      .eq('user_id', state.user.id)
+      .eq('name', tagName);
+
+    if (!tagError) {
+      // Also update favorites that were using this tag to 'Otra' or null
+      await supabase
+        .from('favorites')
+        .update({ category: 'Otra' })
+        .eq('user_id', state.user.id)
+        .eq('category', tagName);
+
+      setState(prev => ({
+        ...prev,
+        userTags: prev.userTags.filter(t => t !== tagName),
+        favoriteRecipes: prev.favoriteRecipes.map(r => r.category === tagName ? { ...r, category: 'Otra' } : r)
       }));
     }
   };
@@ -763,6 +837,10 @@ const App: React.FC = () => {
               onStartCooking={() => navigateTo('cooking-mode')}
               onShare={handleShare}
               isPremium={state.user?.isPremium}
+              userTags={state.userTags}
+              onCreateTag={handleCreateTag}
+              onUpdateTag={handleUpdateTag}
+              onDeleteTag={handleDeleteTag}
             />
           </Layout>
         );
@@ -789,6 +867,7 @@ const App: React.FC = () => {
           <Layout activeNav="favorites" onNavClick={navigateTo}>
             <FavoritesView
               recipes={state.favoriteRecipes}
+              userTags={state.userTags}
               onRecipeClick={handleSelectRecipe}
               onBack={() => navigateTo('dashboard')}
             />
