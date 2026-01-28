@@ -138,6 +138,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="flex flex-col bg-pure-black p-5 space-y-4 relative">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-2 left-5 text-zinc-600 hover:text-white transition-colors z-[50]"
+        >
+          <span className="material-symbols-outlined text-sm">arrow_back</span>
+        </button>
+      )}
       {/* Hidden File Input */}
       <input
         type="file"
@@ -181,14 +189,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       </header>
 
       <div className="space-y-1.5 pt-2 relative">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="absolute -top-1 right-0 text-zinc-600 hover:text-white transition-colors"
-          >
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-          </button>
-        )}
         <h1 className="text-4xl font-black tracking-tighter text-white leading-none">
           Chef<span className="text-primary">Scan.IA</span>
         </h1>
