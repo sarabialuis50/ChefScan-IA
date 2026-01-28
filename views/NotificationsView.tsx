@@ -110,7 +110,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
               key={notif.id}
               onClick={() => {
                 setNotifications(prev => prev.map(n =>
-                  n.id === notif.id ? { ...n, unread: !n.unread } : n
+                  n.id === notif.id ? { ...n, unread: false } : n
                 ));
               }}
               className={`relative glass-card rounded-[1.5rem] p-4 flex gap-4 border transition-all cursor-pointer active:scale-95 ${notif.unread ? 'border-primary/30 bg-primary/5' : 'border-white/5'

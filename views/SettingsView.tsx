@@ -14,7 +14,13 @@ interface SettingsViewProps {
     };
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser, onLogout, stats }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({
+    onBack,
+    user,
+    onUpdateUser,
+    onLogout,
+    stats = { recipes: 0, favorites: 0, generated: 0 }
+}) => {
     const [notifications, setNotifications] = useState(true);
     const [autoSave, setAutoSave] = useState(false);
     const [language, setLanguage] = useState('Español');
@@ -22,6 +28,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
     const [showPremiumModal, setShowPremiumModal] = useState(false);
     const [showNotificationsModal, setShowNotificationsModal] = useState(false);
     const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+    const [showSupportModal, setShowSupportModal] = useState(false);
 
     // Detailed Notifications State
     const [notifSettings, setNotifSettings] = useState({
@@ -103,6 +110,26 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
     const handleAllergyBlur = () => {
         const allergies = tempAllergies.split(',').map(a => a.trim()).filter(a => a !== '');
         onUpdateUser({ allergies });
+    };
+
+    const handleShareApp = async () => {
+        const shareData = {
+            title: 'ChefScan.IA',
+            text: '¡Mira esta app increíble! Cocina con Inteligencia Artificial 🍳🤖',
+            url: window.location.origin
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('Error sharing:', err);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+            alert('Enlace copiado al portapapeles!');
+        }
     };
 
     return (
@@ -285,8 +312,12 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
                     </button>
 
                     {/* Soporte */}
-                    <div className="w-full p-4 rounded-3xl border border-white/5 bg-zinc-900/40 flex flex-col gap-3">
-                        <div className="flex items-center gap-4">
+                    {/* Soporte Button */}
+                    <button
+                        onClick={() => setShowSupportModal(true)}
+                        className="w-full p-4 rounded-3xl border border-white/5 bg-zinc-900/40 hover:bg-zinc-900/60 transition-all flex items-center justify-between active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-4 text-left">
                             <div className="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shadow-glow">
                                 <span className="material-symbols-outlined">support_agent</span>
                             </div>
@@ -295,17 +326,25 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
                                 <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">¿Necesitas ayuda?</p>
                             </div>
                         </div>
-                        <div className="grid gap-2 pl-14">
-                            <a href="mailto:info@chefscania.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
-                                <span className="material-symbols-outlined text-xs">mail</span>
-                                <span className="text-[10px] font-bold tracking-widest">info@chefscania.com</span>
-                            </a>
-                            <a href="https://wa.me/573017810256" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-green-400 transition-colors">
-                                <span className="material-symbols-outlined text-xs">chat</span>
-                                <span className="text-[10px] font-bold tracking-widest">+57 301 781 0256 (WhatsApp)</span>
-                            </a>
+                        <span className="material-symbols-outlined text-zinc-600">chevron_right</span>
+                    </button>
+
+                    {/* Compartir App Button */}
+                    <button
+                        onClick={handleShareApp}
+                        className="w-full p-4 rounded-3xl border border-white/5 bg-zinc-900/40 hover:bg-zinc-900/60 transition-all flex items-center justify-between active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-4 text-left">
+                            <div className="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shadow-glow">
+                                <span className="material-symbols-outlined">share</span>
+                            </div>
+                            <div>
+                                <p className="text-white text-sm font-bold uppercase tracking-tight">Compartir App</p>
+                                <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">Invita a tus amigos</p>
+                            </div>
                         </div>
-                    </div>
+                        <span className="material-symbols-outlined text-zinc-600">chevron_right</span>
+                    </button>
 
                     <div className="flex items-center justify-between p-4 bg-zinc-900/40 rounded-3xl border border-white/5">
                         <div className="flex items-center gap-4">
@@ -898,6 +937,65 @@ const SettingsView: React.FC<SettingsViewProps> = ({ onBack, user, onUpdateUser,
                                     Guardar Cambios
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Support Modal */}
+            {showSupportModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-pure-black/95 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="w-full max-w-sm h-auto max-h-[85vh] glass-card rounded-[2.5rem] p-6 border-primary/30 flex flex-col relative overflow-hidden shadow-2xl">
+                        {/* Background Splashes */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 blur-[50px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
+                        {/* Header */}
+                        <div className="flex items-center justify-center relative z-10 mb-6 flex-shrink-0">
+                            <h3 className="text-white font-bold text-lg uppercase tracking-wider font-outfit">Soporte</h3>
+                            <button
+                                onClick={() => setShowSupportModal(false)}
+                                className="absolute -top-1 -right-1 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 active:scale-90 transition-all z-20"
+                            >
+                                <span className="material-symbols-outlined text-zinc-400 text-lg">close</span>
+                            </button>
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="flex-1 space-y-4 relative z-10 px-1">
+                            <p className="text-zinc-400 text-xs text-center pb-4">
+                                Estamos aquí para ayudarte. Contáctanos si tienes dudas, problemas o sugerencias.
+                            </p>
+
+                            <a
+                                href="mailto:info@chefscania.com"
+                                className="w-full p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-4 active:scale-[0.98]"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                                    <span className="material-symbols-outlined">mail</span>
+                                </div>
+                                <div>
+                                    <p className="text-white text-sm font-bold uppercase tracking-tight">Email</p>
+                                    <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">info@chefscania.com</p>
+                                </div>
+                                <span className="material-symbols-outlined text-zinc-600 ml-auto leading-none">open_in_new</span>
+                            </a>
+
+                            <a
+                                href="https://wa.me/573017810256"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full p-4 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all flex items-center gap-4 active:scale-[0.98]"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center">
+                                    <span className="material-symbols-outlined">chat</span>
+                                </div>
+                                <div>
+                                    <p className="text-white text-sm font-bold uppercase tracking-tight">WhatsApp</p>
+                                    <p className="text-zinc-500 text-[10px] font-medium uppercase tracking-widest">+57 301 781 0256</p>
+                                </div>
+                                <span className="material-symbols-outlined text-zinc-600 ml-auto leading-none">open_in_new</span>
+                            </a>
                         </div>
                     </div>
                 </div>

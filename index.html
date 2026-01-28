@@ -39,6 +39,7 @@
     rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
+  <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -129,6 +130,16 @@
       scrollbar-width: none;
     }
 
+    /* Tooltip Hide Scrollbar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
     /* Material Icons Fill */
     .fill-icon {
       font-variation-settings: 'FILL' 1;
@@ -144,7 +155,6 @@
   }
 }
 </script>
-  <link rel="stylesheet" href="/index.css">
 </head>
 
 <body class="antialiased">

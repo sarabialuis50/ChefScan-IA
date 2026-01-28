@@ -39,13 +39,24 @@ Este roadmap integra los pilares de `Prompt.md`, el flujo de `Introduccion.md` y
 *   [x] **Community Feed:** Muro visual para compartir fotos de platos y recibir feedback neón.
 *   [x] **Perfiles Públicos:** Seguimiento de otros chefs y visualización de estadísticas compartidas.
 
-## � Fase 7: Calidad y Despliegue (Production Ready)
+## 💳 Fase 8: Sistema de Pagos (Stripe Integration)
+*   [ ] **Configuración Stripe:** Setup de cuenta, API Keys y Webhooks en dashboard.
+*   [ ] **Backend de Pagos (Supabase Edge Functions):**
+    *   [ ] Creación de clientes Stripe vinculados a `auth.users`.
+    *   [ ] Endpoints para iniciar Checkout Sessions (Suscripción Monthly/Yearly).
+    *   [ ] Manejo de Webhooks para actualizar estado `is_premium` en DB.
+*   [ ] **Frontend de Suscripción:**
+    *   [ ] Integración de planes en `PremiumModal` con redirección a Stripe Checkout.
+    *   [ ] Portal de cliente para gestión de suscripción (cancelar/actualizar).
+*   [ ] **Validación de Pagos:** Testing con tarjetas de prueba y manejo de estados (éxito, fallo, cancelado).
+
+## 🛡️ Fase 9: Calidad y Despliegue (Production Ready)
 *   [ ] **Auditoría de Seguridad (RLS):** Verificación de políticas de acceso a datos en Supabase.
 *   [ ] **Limpieza de Código:** Eliminación de logs, deuda técnica y optimización de imports.
 *   [ ] **Testing E2E:** Validación de flujos críticos (Registro -> Scan -> Cocina -> Social).
 *   [ ] **Build & Deploy:** Configuración final de variables y generación de assets de producción.
 
-## �🛠️ KPIs de Verificación
+## 🛠️ KPIs de Verificación
 1.  **Persistencia:** El usuario no pierde datos al recargar la página.
 2.  **Seguridad:** Los datos sensibles del perfil están protegidos via RLS (Row Level Security).
 3.  **Velocidad:** Sincronización de base de datos en < 500ms tras acciones de usuario.

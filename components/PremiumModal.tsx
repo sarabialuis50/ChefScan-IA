@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 interface PremiumModalProps {
     isOpen: boolean;
@@ -7,7 +8,88 @@ interface PremiumModalProps {
 }
 
 const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) => {
+    const [loading, setLoading] = useState(false);
+
     if (!isOpen) return null;
+
+    const handleSubscribe = async () => {
+        setLoading(true);
+        try {
+            // 1. Get User
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user?.email) throw new Error("No se pudo identificar al usuario.");
+
+            // 2. Ensure Wompi is available
+            let WompiConstructor = (window as any).WidgetCheckout || (window as any).Widget;
+
+            if (!WompiConstructor) {
+                console.log("Wompi not found in window, attempting to load script...");
+                await new Promise((resolve) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://checkout.wompi.co/widget.js';
+                    script.async = true;
+                    script.onload = () => resolve(true);
+                    script.onerror = () => resolve(false);
+                    document.body.appendChild(script);
+                });
+                WompiConstructor = (window as any).WidgetCheckout || (window as any).Widget;
+            }
+
+            if (!WompiConstructor) {
+                throw new Error("La pasarela de pagos (Wompi) no está disponible. Por favor refresca la página.");
+            }
+
+            // 3. Get Signature from Edge Function
+            const { data: wompiData, error } = await supabase.functions.invoke('create-wompi-signature', {
+                body: { returnUrl: window.location.origin }
+            });
+
+            if (error) throw error;
+            if (wompiData?.error) throw new Error(wompiData.error);
+
+            // 4. Open Wompi Widget
+            const checkoutConfig = {
+                currency: 'COP',
+                amountInCents: wompiData.amountInCents,
+                reference: wompiData.reference,
+                publicKey: wompiData.publicKey,
+                signature: { integrity: wompiData.integritySignature },
+                redirectUrl: window.location.origin,
+                customerData: {
+                    email: user.email,
+                    fullName: user.user_metadata?.name || 'ChefScan User'
+                }
+            };
+
+            console.log('Iniciando Checkout Wompi con:', {
+                reference: checkoutConfig.reference,
+                amount: checkoutConfig.amountInCents,
+                publicKey: checkoutConfig.publicKey,
+                integrity: checkoutConfig.signature.integrity
+            });
+
+            const checkout = new WompiConstructor(checkoutConfig);
+
+            checkout.open((result: any) => {
+                const transaction = result.transaction;
+                if (transaction.status === 'APPROVED') {
+                    alert('¡Pago Exitoso! Tu cuenta Premium se activará en instantes.');
+                    onClose();
+                    window.location.reload();
+                } else if (transaction.status === 'DECLINED') {
+                    alert('El pago fue rechazado por la entidad financiera.');
+                } else if (transaction.status === 'VOIDED' || transaction.status === 'ERROR') {
+                    alert('Hubo un problema con la transacción. Inténtalo de nuevo.');
+                }
+            });
+
+        } catch (err: any) {
+            console.error('Wompi Error:', err);
+            alert('Error al procesar el pago: ' + (err.message || 'Inténtalo más tarde'));
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getReasonText = () => {
         switch (reason) {
@@ -72,13 +154,28 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
-                        (Despensa de 30 ítems vs 5)
+                        Despensa de 30 ítems (vs 5 free)
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                        <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
+                        Subir recetas en la comunidad
                     </div>
                 </div>
 
                 <div className="grid gap-3 pt-2">
-                    <button className="w-full py-4 bg-primary text-black rounded-xl font-bold uppercase text-xs tracking-widest neon-glow shadow-strong active:scale-95 transition-all">
-                        Subir a Premium • $19.900 COP/mes
+                    <button
+                        onClick={handleSubscribe}
+                        disabled={loading}
+                        className="w-full py-4 bg-primary text-black rounded-xl font-bold uppercase text-xs tracking-widest neon-glow shadow-strong active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? (
+                            <>
+                                <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                                PROCESANDO...
+                            </>
+                        ) : (
+                            'Subir a Premium • $19.900 COP/mes'
+                        )}
                     </button>
                     <button onClick={onClose} className="w-full py-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
                         Tal vez más tarde
