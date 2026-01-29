@@ -49,18 +49,34 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
             <img
               src="/portada-movil.png"
               alt="ChefScan Mobile Background"
-              className="w-full h-full object-cover opacity-30"
+              className="w-full h-full object-cover opacity-100"
             />
+            {/* Functional Overlay Buttons for Mobile Image */}
+            <div className="absolute inset-0 z-50 flex flex-col justify-end pb-[15%] items-center px-12 gap-4">
+              {/* Invisible 'Comenzar ahora' Button */}
+              <button
+                onClick={onStart}
+                className="w-full h-14 bg-transparent outline-none focus:outline-none focus:ring-4 focus:ring-[#39FF14]/50 rounded-full"
+                aria-label="Comenzar ahora"
+              />
+
+              {/* Invisible 'Ya tengo una cuenta' Button */}
+              <button
+                onClick={onStart}
+                className="w-full h-14 bg-transparent outline-none focus:outline-none focus:ring-4 focus:ring-white/30 rounded-full"
+                aria-label="Ya tengo una cuenta"
+              />
+            </div>
           </div>
 
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A] via-[#0A0A0A]/95 to-[#0A0A0A]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0A0A0A] via-[#0A0A0A]/95 to-[#0A0A0A] hidden lg:block"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full pointer-events-none lg:pointer-events-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start h-full">
 
             {/* Left Column: Text Content */}
-            <div className="lg:col-span-7 space-y-10 lg:sticky lg:top-32 text-left">
+            <div className="lg:col-span-7 space-y-10 lg:sticky lg:top-32 text-left hidden lg:block">
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 backdrop-blur-xl border border-[#39FF14]/20">
                   <span className="flex h-2 w-2 rounded-full bg-[#39FF14] animate-pulse"></span>
