@@ -12,14 +12,13 @@ const ai = new GoogleGenAI({
 
 export const analyzeIngredientImage = async (base64Image: string): Promise<Ingredient[]> => {
   try {
-    // Usamos gemini-2.0-flash que es el que confirmamos que SI funciona en tu cuenta hoy
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [
         {
           role: 'user',
           parts: [
-            { text: "Analiza esta imagen e identifica ÚNICAMENTE los ingredientes comestibles que sean el sujeto principal de la foto. Ignora ruidos de fondo, logos o decoraciones no comestibles. Si solo hay un ingrediente central, devuelve solo ese. Devuelve un arreglo JSON de objetos con: name (en español y minúsculas), confidence (0.0 a 1.0), properties, nutrients. TODO EN ESPAÑOL." },
+            { text: "Analiza esta imagen y identifica los ingredientes comestibles principales. Devuelve un arreglo JSON de objetos con: name, confidence, properties, nutrients. TODO EN ESPAÑOL." },
             {
               inlineData: {
                 mimeType: "image/jpeg",
@@ -33,9 +32,7 @@ export const analyzeIngredientImage = async (base64Image: string): Promise<Ingre
 
     const text = response.text || "";
     const cleanJson = text.replace(/```json\s*|\s*```/g, "").trim();
-    const ingredients: Ingredient[] = JSON.parse(cleanJson || "[]");
-    // Filtramos por confianza mínima para evitar falsos positivos
-    return ingredients.filter(ing => !ing.confidence || ing.confidence > 0.7);
+    return JSON.parse(cleanJson || "[]");
   } catch (error) {
     console.error("Error en visión:", error);
     return [];
@@ -50,7 +47,6 @@ export const generateRecipes = async (
   cookingGoal: string = 'explorar'
 ): Promise<Recipe[]> => {
   try {
-    // Usamos 2.0-flash para recetas también por su alta tasa de éxito en JSON manual
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{
@@ -59,12 +55,11 @@ export const generateRecipes = async (
           text: `Actúa como Chef Ejecutivo. Crea 5 recetas creativas con: ${ingredients.join(", ")}. Porciones: ${portions}. Alergias: ${allergies ? allergies.join(", ") : "ninguna"}. Meta: ${cookingGoal}. 
         IMPORTANTE: Devuelve ÚNICAMENTE el arreglo JSON, sin introducciones, sin saludos y sin explicaciones. 
         Formato: arreglo JSON de objetos Recipe (id, title, description, ingredients, instructions, nutriScore, photoQuery). 
-        Asegúrate de que "photoQuery" sean 2-3 palabras clave en INGLÉS descriptivas del plato para búsqueda de imágenes (ej: "roasted pork", "pork ribs"). Todo lo demás en ESPAÑOL.` }]
+        Asegúrate de que "photoQuery" sean 2-3 palabras clave en INGLÉS descriptivas del plato para búsqueda de imágenes. Todo lo demás en ESPAÑOL.` }]
       }]
     });
 
     const text = response.text || "";
-    // Extractor robusto: Busca el inicio '[' y el fin ']' para ignorar textos como "¡Absolutamente!"
     const jsonStart = text.indexOf('[');
     const jsonEnd = text.lastIndexOf(']');
 
@@ -76,7 +71,6 @@ export const generateRecipes = async (
     }
 
     const recipes = JSON.parse(cleanJson || "[]");
-
     if (!Array.isArray(recipes) || recipes.length === 0) return [];
 
     return await Promise.all(recipes.map(async (recipe: any) => {
@@ -100,8 +94,7 @@ export const checkIngredientsConsistency = async (ingredients: string[]): Promis
       model: 'gemini-2.0-flash',
       contents: [{ role: 'user', parts: [{ text: `Analiza: ${ingredients.join(", ")}. ¿Combinan? Responde OK o una frase corta en español.` }] }]
     });
-    const text = response.text || "";
-    return text.includes("OK") ? null : text;
+    return response.text.includes("OK") ? null : response.text;
   } catch { return null; }
 };
 
