@@ -160,12 +160,11 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
         setStatus("Identificación completa");
         setDetected(ingredients);
 
+        // Notify app and close after a short display of results
         setTimeout(() => {
           onComplete(ingredients, optimizedBase64);
-          setTimeout(() => {
-            onReadyToGenerate();
-          }, 1000);
-        }, 2000);
+          onReadyToGenerate();
+        }, 1500);
 
       } catch (err) {
         clearInterval(interval);

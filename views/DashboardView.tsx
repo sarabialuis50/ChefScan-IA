@@ -56,27 +56,33 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sincronizar imagen del escáner con la previsualización del Dashboard
+  // Sincronizar imagen y entrada manual del escáner
   React.useEffect(() => {
     if (scannedImage) {
-      // Si es base64 sin prefijo, añadirlo
       const img = scannedImage.startsWith('data:') ? scannedImage : `data:image/jpeg;base64,${scannedImage}`;
       setPreviewImage(img);
     }
   }, [scannedImage]);
 
   React.useEffect(() => {
-    if (scannedIngredients.length > 0) {
-      // Evitar duplicados y comas extra
-      const currentItems = manualInput.split(',')
-        .map(i => i.trim())
-        .filter(Boolean);
+    if (scannedIngredients && scannedIngredients.length > 0) {
+      setManualInput(prev => {
+        const currentItems = prev.split(',')
+          .map(i => i.trim())
+          .filter(Boolean);
 
-      const newItems = scannedIngredients.map(i => i.name);
+        const newItems = scannedIngredients.map(i => i.name);
 
-      // Combinar sin repetir y limpiar comas
-      const combined = Array.from(new Set([...currentItems, ...newItems]));
-      setManualInput(combined.join(', '));
+        // Combinar evitando duplicados (sin distinguir mayúsculas/minúsculas)
+        const combined = [...currentItems];
+        newItems.forEach(newItem => {
+          if (!combined.some(item => item.toLowerCase() === newItem.toLowerCase())) {
+            combined.push(newItem);
+          }
+        });
+
+        return combined.join(', ');
+      });
     }
   }, [scannedIngredients]);
 
@@ -113,8 +119,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           // Persistencia en Supabase REMOVIDA por solicitud del usuario
           // Solo se mantiene la imagen en memoria temporalmente para la sesión
 
-          const names = identifiedIngredients.map(i => i.name).join(', ');
-          setManualInput(prev => prev ? `${prev}, ${names}` : names);
           if (onComplete) onComplete(identifiedIngredients, optimizedBase64);
         } else {
           alert("No pudimos identificar ingredientes claros en esta imagen.");
@@ -215,16 +219,43 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               />
 
               {/* Overlay Content */}
-              <div className="relative z-10 w-full h-full p-4 flex flex-col items-center justify-center">
+              <div className="relative z-10 w-full h-full p-6 flex flex-col items-center justify-center">
                 {analyzing ? (
                   <div className="flex flex-col items-center justify-center gap-3 bg-black/40 backdrop-blur-sm p-4 rounded-2xl">
                     <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                     <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Analizando...</span>
                   </div>
                 ) : (
-                  <span className="text-white text-[10px] font-black uppercase tracking-widest drop-shadow-lg animate-in fade-in duration-500">
-                    Captura Exitosa
-                  </span>
+                  <div className="flex flex-col items-center gap-4 w-full">
+                    <span className="text-white text-[10px] font-black uppercase tracking-widest drop-shadow-lg animate-in fade-in duration-500 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">
+                      Captura Exitosa
+                    </span>
+
+                    {/* Chips de ingredientes detectados */}
+                    {scannedIngredients && scannedIngredients.length > 0 && (
+                      <div className="flex flex-wrap justify-center gap-2 max-w-full animate-in zoom-in-95 duration-500">
+                        {scannedIngredients.map((ing, i) => (
+                          <div
+                            key={i}
+                            className="bg-primary/20 border border-primary/40 backdrop-blur-md px-3 py-1.5 rounded-xl flex flex-col items-center shadow-lg"
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-tight text-white">{ing.name}</span>
+                            {ing.nutrients && (
+                              <span className="text-[8px] font-bold text-primary/80 uppercase tracking-tighter">
+                                {ing.nutrients.calories} kcal
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {scannedIngredients && scannedIngredients.length === 0 && (
+                      <span className="text-red-400 text-[9px] font-black uppercase tracking-widest bg-black/40 px-3 py-1 rounded-full">
+                        No se detectaron ingredientes
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             </>

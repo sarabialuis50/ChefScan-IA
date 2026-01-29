@@ -8,7 +8,7 @@ export const getRecipeImage = async (query: string): Promise<string> => {
     try {
         // Pexels API endpoint para búsqueda
         // Usamos per_page=1 para obtener solo la mejor coincidencia
-        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`, {
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query + " food dish")}&per_page=1&orientation=landscape`, {
             headers: {
                 Authorization: PEXELS_API_KEY
             }

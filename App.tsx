@@ -506,7 +506,7 @@ const App: React.FC = () => {
         let savedRecipeId = null;
 
         // Persist history to DB
-        if (state.user?.id) {
+        if (state.user?.id && recipes && recipes.length > 0) {
           // First save the best recipe to the recipes table for the history link
           const { data: dbRecipe } = await supabase
             .from('recipes')

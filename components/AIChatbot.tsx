@@ -99,11 +99,12 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
 
   const handleSend = async () => {
     if (chefCredits <= 0 && !isPremium) {
-      // Don't auto-show premium modal, let the UI show credits exhausted
       return;
     }
 
     const userMessage = input.trim();
+    if (!userMessage) return;
+
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
     setIsLoading(true);
