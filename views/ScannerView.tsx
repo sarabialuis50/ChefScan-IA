@@ -184,7 +184,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
   };
 
   return (
-    <div className="h-screen w-full bg-pure-black flex flex-col items-center justify-center overflow-hidden">
+    <div style={{ backgroundColor: 'var(--bg-app)' }} className="h-screen w-full flex flex-col items-center justify-center overflow-hidden">
       {/* Contenedor Vertical (Pantalla completa y sin bordes de limitación) */}
       <div className="w-full h-full relative flex flex-col items-center justify-between overflow-hidden">
 
@@ -198,12 +198,12 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
               className="w-full h-full object-cover opacity-90"
             />
           ) : (
-            <div className="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-10 text-center space-y-6">
+            <div style={{ backgroundColor: 'var(--bg-app)' }} className="w-full h-full flex flex-col items-center justify-center p-10 text-center space-y-6">
               <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
                 <span className="material-symbols-outlined text-red-500 text-5xl">no_photography</span>
               </div>
               <div className="space-y-2">
-                <h3 className="text-white font-bold uppercase tracking-widest text-sm">Acceso Restringido</h3>
+                <h3 style={{ color: 'var(--text-main)' }} className="font-bold uppercase tracking-widest text-sm">Acceso Restringido</h3>
                 <p className="text-zinc-500 text-xs leading-relaxed max-w-xs">{cameraError}</p>
               </div>
               <button
@@ -221,9 +221,10 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
         <header className="relative z-50 w-full flex justify-start p-6">
           <button
             onClick={handleClose}
-            className="w-12 h-12 rounded-full bg-black/60 border border-white/20 flex items-center justify-center active:scale-95 transition-all shadow-xl backdrop-blur-md"
+            style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.6)', borderColor: 'var(--card-border)' }}
+            className="w-12 h-12 rounded-full border flex items-center justify-center active:scale-95 transition-all shadow-xl backdrop-blur-md"
           >
-            <span className="material-symbols-outlined text-white text-2xl">arrow_back</span>
+            <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
           </button>
         </header>
 
@@ -251,7 +252,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
                 <img src="/chefbot_final.png" alt="ChefScan AI" className="w-14 h-14 object-contain opacity-90" />
               </div>
 
-              <div className="bg-surface-dark/80 backdrop-blur-md border border-primary/30 px-4 py-1.5 rounded-full flex items-center gap-2 shadow-xl">
+              <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--primary-half)' }} className="backdrop-blur-md border px-4 py-1.5 rounded-full flex items-center gap-2 shadow-xl">
                 <div className={`w-1.5 h-1.5 rounded-full ${cameraError ? 'bg-red-500' : 'bg-primary animate-pulse'}`}></div>
                 <span className="text-[10px] font-bold tracking-widest text-primary uppercase font-tech">ChefScan.IA Engine v2.5</span>
               </div>
@@ -259,7 +260,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
           </div>
 
           <div className="mt-12 text-center space-y-2 px-4">
-            <h2 className="text-2xl font-tech font-bold text-white tracking-tight">
+            <h2 style={{ color: 'var(--text-main)' }} className="text-2xl font-tech font-bold tracking-tight">
               {detected.length > 0 ? "Resultados IA" : scanning ? "Codificando datos..." : cameraError ? "Error de Sistema" : isStable ? "Fotocaptura..." : "Escaneo Biométrico"}
             </h2>
             <p className="text-sm text-gray-400 max-w-xs">{status}</p>
@@ -268,8 +269,8 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
           {detected.length > 0 && (
             <div className="mt-8 flex flex-wrap justify-center gap-2 max-w-sm px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {detected.map((ing, i) => (
-                <div key={i} className="bg-primary/10 border border-primary/30 p-2 rounded-2xl flex flex-col gap-1 min-w-[100px] items-center">
-                  <span className="text-[10px] font-black uppercase tracking-tight text-white">{ing.name}</span>
+                <div key={i} style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.1)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }} className="border p-2 rounded-2xl flex flex-col gap-1 min-w-[100px] items-center">
+                  <span style={{ color: 'var(--text-main)' }} className="text-[10px] font-black uppercase tracking-tight">{ing.name}</span>
                   {ing.nutrients && (
                     <div className="text-[8px] font-bold text-primary flex items-center gap-2 opacity-80 uppercase tracking-tighter">
                       <span>{ing.nutrients.calories} kcal</span>
@@ -293,7 +294,7 @@ const ScannerView: React.FC<ScannerViewProps> = ({ onCancel, onComplete, onReady
                 </div>
                 <span className="text-xs font-mono text-zinc-500">{progress}%</span>
               </div>
-              <div className="h-2 w-full bg-surface-dark rounded-full overflow-hidden border border-white/5 relative shadow-inner">
+              <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="h-2 w-full rounded-full overflow-hidden border relative shadow-inner">
                 <div
                   className="h-full bg-primary rounded-full neon-glow transition-all duration-300"
                   style={{ width: `${progress}%` }}

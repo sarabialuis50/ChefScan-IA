@@ -115,8 +115,8 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
     };
 
     return (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 bg-pure-black/90 backdrop-blur-md">
-            <div className="w-full max-w-sm glass-card rounded-[2.5rem] p-8 border-primary/30 space-y-6 text-center shadow-[0_0_50px_rgba(57,255,20,0.1)] relative">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md" style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.9)' }}>
+            <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-sm rounded-[2.5rem] p-8 border space-y-6 text-center shadow-[0_0_50px_rgba(57,255,20,0.1)] relative">
                 <button
                     onClick={onClose}
                     className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
@@ -129,34 +129,34 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
                 </div>
 
                 <div className="space-y-3">
-                    <h3 className="text-2xl font-outfit font-bold uppercase tracking-tight">Acceso Premium</h3>
-                    <p className="text-zinc-400 text-sm leading-relaxed">
+                    <h3 style={{ color: 'var(--text-main)' }} className="text-2xl font-outfit font-bold uppercase tracking-tight">Acceso Premium</h3>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed">
                         {getReasonText()} Hazte Premium para disfrutar de una experiencia sin límites.
                     </p>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-left space-y-2">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="border rounded-2xl p-4 text-left space-y-2">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         6 Consultas Diarias (vs 2 Free)
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         Informe nutricional completo
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         ChefBot Ilimitado (vs 10 créditos)
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         Favoritos Ilimitados (vs 5 Free)
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         Despensa de 30 ítems (vs 5 free)
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-300 uppercase tracking-widest">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         Subir recetas en la comunidad
                     </div>

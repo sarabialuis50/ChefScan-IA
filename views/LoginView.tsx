@@ -86,13 +86,13 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 bg-pure-black relative overflow-hidden">
+    <div style={{ backgroundColor: 'var(--bg-app)' }} className="min-h-screen w-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Background Grids */}
       <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #39FF14 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
       <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[140px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[140px] pointer-events-none"></div>
 
-      <main className="w-full max-w-md glass-card rounded-[3rem] p-10 relative z-10 border-primary/20">
+      <main style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-md rounded-[3rem] p-10 relative z-10 border shadow-2xl">
         {onBack && (
           <button
             onClick={onBack}
@@ -103,13 +103,13 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
           </button>
         )}
         <div className="flex flex-col items-center text-center mb-10">
-          <div className="w-20 h-20 bg-[#0a0a0a] rounded-2xl flex items-center justify-center mb-6 neon-glow border border-[#39FF14]/30 overflow-hidden">
+          <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }} className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 neon-glow border overflow-hidden">
             <img src="/landing-logo.png" alt="ChefScan Logo" className="w-14 h-14 object-contain relative z-10" />
           </div>
           <h2 className="text-3xl font-bold tracking-tighter drop-shadow-lg mb-2">
-            <span className="text-white">Chef</span><span className="text-[#39FF14]">Scan.IA</span>
+            <span style={{ color: 'var(--text-main)' }}>Chef</span><span className="text-primary">Scan.IA</span>
           </h2>
-          <p className="text-xs text-gray-400 font-medium px-4 leading-relaxed">
+          <p style={{ color: 'var(--text-muted)' }} className="text-xs font-medium px-4 leading-relaxed">
             Recetas saludables creadas con IA para tu bienestar diario
           </p>
         </div>
@@ -117,14 +117,15 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Email de Acceso</label>
-            <div className="relative group rounded-xl border border-white/10 bg-white/5 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/30 transition-all overflow-hidden">
+            <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/30 transition-all overflow-hidden">
               <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
                 <span className="material-symbols-outlined text-xl">alternate_email</span>
               </span>
               <input
                 type="email"
                 required
-                className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700 text-white"
+                className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700"
+                style={{ color: 'var(--text-main)' }}
                 placeholder="usuario@chefscan.ai"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -134,7 +135,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
 
           <div className="space-y-2">
             <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Contraseña</label>
-            <div className="relative group rounded-xl border border-white/10 bg-white/5 focus-within:border-primary transition-all overflow-hidden">
+            <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
               <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
                 <span className="material-symbols-outlined text-xl">lock</span>
               </span>
@@ -142,7 +143,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-12 pr-12 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700 text-white"
+                className="block w-full pl-12 pr-12 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700"
+                style={{ color: 'var(--text-main)' }}
                 placeholder="••••••••"
                 required
               />
@@ -161,7 +163,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
               <button
                 type="button"
                 onClick={handleResetPassword}
-                className="text-[10px] font-bold text-gray-500 hover:text-primary transition-colors uppercase tracking-wider bg-transparent border-none cursor-pointer"
+                style={{ color: 'var(--text-muted)' }}
+                className="text-[10px] font-bold hover:text-primary transition-colors uppercase tracking-wider bg-transparent border-none cursor-pointer"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -179,10 +182,10 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
 
         <div className="relative my-10">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10"></div>
+            <div style={{ borderColor: 'var(--card-border)' }} className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-[10px]">
-            <span className="px-4 bg-[#0a0a0a] text-gray-600 font-bold uppercase tracking-[0.25em]">O CONTINUAR CON</span>
+            <span style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--text-muted)' }} className="px-4 font-bold uppercase tracking-[0.25em]">O CONTINUAR CON</span>
           </div>
         </div>
 
@@ -225,7 +228,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
       </main >
 
       <footer className="mt-10">
-        <p className="text-[9px] text-gray-700 font-bold uppercase tracking-[0.4em]">© 2026 ChefScan System v2.5</p>
+        <p style={{ color: 'var(--text-muted)', opacity: 0.5 }} className="text-[9px] font-bold uppercase tracking-[0.4em]">© 2026 ChefScan System v2.5</p>
       </footer>
     </div >
   );

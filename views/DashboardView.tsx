@@ -5,10 +5,12 @@ import { analyzeIngredientImage, checkIngredientsConsistency } from '../services
 import { resizeAndCompressImage, getRecipeImage } from '../utils/imageUtils';
 import { supabase } from '../lib/supabase';
 import { getDaysDiff } from '../utils/dateUtils';
+import SaveFavoriteModal from '../components/SaveFavoriteModal';
 
 interface DashboardViewProps {
   user: any;
   recentRecipes: Recipe[];
+  favoriteRecipes: Recipe[];
   scannedIngredients?: Ingredient[];
   scannedImage?: string;
   onClearScanned?: () => void;
@@ -27,17 +29,23 @@ interface DashboardViewProps {
   onBack?: () => void;
   isDarkMode: boolean;
   onThemeToggle: () => void;
+  userTags?: string[];
+  onCreateTag?: (tag: string) => void;
+  onUpdateTag?: (oldName: string, newName: string) => void;
+  onDeleteTag?: (tag: string) => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
   user,
   recentRecipes,
+  favoriteRecipes,
   scannedIngredients = [],
   scannedImage,
   onClearScanned,
   onScanClick,
   onRecipeClick,
   onGenerate,
+  onToggleFavorite,
   onStartGeneration,
   onExploreClick,
   onNotificationsClick,
@@ -49,13 +57,19 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   acceptedChallengeId,
   onBack,
   isDarkMode,
-  onThemeToggle
+  onThemeToggle,
+  userTags = [],
+  onCreateTag,
+  onUpdateTag,
+  onDeleteTag
 }) => {
   const [manualInput, setManualInput] = useState('');
   const [portions, setPortions] = useState(2);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [savedItems, setSavedItems] = useState<Set<number>>(new Set());
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [recipeToTag, setRecipeToTag] = useState<Recipe | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -170,7 +184,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       <header className="flex justify-between items-center w-full pt-2">
         <div className="flex items-center gap-3">
-          <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--primary)' }} className="w-12 h-12 border-2 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300 shadow-[0_0_12px_rgba(57,255,20,0.3)]">
+          <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--primary)' }} className="w-12 h-12 border-2 rounded-full flex items-center justify-center overflow-hidden transition-all duration-300 shadow-[0_0_15px_rgba(57,255,20,0.5)] border-primary">
             {user?.avatarUrl ? (
               <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
@@ -466,7 +480,87 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         );
       })()}
 
-      {/* Recent Discoveries */}
+      {/* Recent AI Recipes */}
+      {recentRecipes.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex justify-between items-end px-1">
+            <h3 style={{ color: 'var(--text-main)' }} className="font-bold uppercase tracking-[0.15em] text-[11px] opacity-80">Recetas Recientes</h3>
+            <button
+              onClick={() => onNavClick?.('results')}
+              className="text-primary text-[10px] font-black uppercase tracking-tighter flex items-center gap-1 transition-opacity hover:opacity-70"
+            >
+              Ver más
+              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            </button>
+          </div>
+
+          <div
+            className="flex gap-4 overflow-x-auto pb-6 -mx-1 px-1 [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {recentRecipes.slice(0, 3).map((recipe) => (
+              <div
+                key={recipe.id}
+                style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }}
+                className="flex-shrink-0 w-44 rounded-[2rem] border overflow-hidden group shadow-lg transition-transform active:scale-95 text-left relative"
+              >
+                {/* Imagen con botón de favorito flotante */}
+                <div onClick={() => onRecipeClick(recipe)} className="relative h-32 w-full overflow-hidden cursor-pointer">
+                  <img
+                    src={getRecipeImage(recipe, 300)}
+                    alt={recipe.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                </div>
+
+                {/* Botón de favorito flotante */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const isFav = favoriteRecipes.some(r => r.id === recipe.id || (r.title === recipe.title && r.description === recipe.description));
+                    if (isFav) {
+                      onToggleFavorite?.(recipe);
+                    } else {
+                      setRecipeToTag(recipe);
+                      setShowTagModal(true);
+                    }
+                  }}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm active:scale-90 transition-all z-20"
+                >
+                  <span className={`material-symbols-outlined text-sm ${favoriteRecipes.some(r => r.id === recipe.id || (r.title === recipe.title && r.description === recipe.description)) ? 'text-red-500 fill-icon' : 'text-zinc-600'}`}>
+                    {favoriteRecipes.some(r => r.id === recipe.id || (r.title === recipe.title && r.description === recipe.description)) ? 'favorite' : 'favorite_border'}
+                  </span>
+                </button>
+
+                {/* Información de la receta */}
+                <div onClick={() => onRecipeClick(recipe)} className="p-4 space-y-3 cursor-pointer">
+                  <h4
+                    style={{
+                      color: 'var(--text-main)',
+                    }}
+                    className="font-bold text-[10px] uppercase tracking-tight line-clamp-2 leading-tight min-h-[2.5em]"
+                  >
+                    {recipe.title}
+                  </h4>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px] text-zinc-400">schedule</span>
+                      <span style={{ color: 'var(--text-muted)' }} className="text-[9px] font-bold">{recipe.prepTime || '25 min'}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[14px] text-orange-500">analytics</span>
+                      <span style={{ color: 'var(--text-muted)' }} className="text-[9px] font-bold">{recipe.difficulty || 'Fácil'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Favorites */}
       <section className="space-y-4">
         <div className="flex justify-between items-end px-1">
           <h3 style={{ color: 'var(--text-main)' }} className="font-bold uppercase tracking-[0.15em] text-[11px] opacity-80">Recetas Favoritas</h3>
@@ -477,39 +571,34 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-6 -mx-1 px-1 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {recentRecipes.length > 0 ? recentRecipes.slice(0, 4).map((recipe, idx) => (
+          {favoriteRecipes.length > 0 ? favoriteRecipes.slice(0, 4).map((recipe) => (
             <button
               key={recipe.id}
               onClick={() => onRecipeClick(recipe)}
               style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }}
               className="flex-shrink-0 w-44 rounded-[2rem] border overflow-hidden group shadow-lg transition-transform active:scale-95 text-left"
             >
-              {/* Imagen con botón de favorito flotante */}
               <div className="relative h-32 w-full overflow-hidden">
                 <img
                   src={getRecipeImage(recipe, 300)}
                   alt={recipe.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                  <span className="material-symbols-outlined text-sm text-red-500 font-variation-fill">favorite</span>
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite?.(recipe);
+                  }}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm active:scale-90 transition-all z-20"
+                >
+                  <span className="material-symbols-outlined text-sm text-red-500 fill-icon">favorite</span>
+                </button>
               </div>
 
-              {/* Información de la receta */}
               <div className="p-4 space-y-3">
                 <h4
-                  style={{
-                    color: 'var(--text-main)',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    height: '2.5em',
-                    lineHeight: '1.25'
-                  }}
-                  className="font-bold text-[10px] uppercase tracking-tight"
+                  style={{ color: 'var(--text-main)' }}
+                  className="font-bold text-[10px] uppercase tracking-tight line-clamp-2 leading-tight min-h-[2.5em]"
                 >
                   {recipe.title}
                 </h4>
@@ -534,6 +623,22 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
       </section>
+
+      {/* Selector de Etiquetas para Favoritos */}
+      <SaveFavoriteModal
+        isOpen={showTagModal}
+        recipe={recipeToTag}
+        onClose={() => setShowTagModal(false)}
+        onSave={(category) => {
+          if (recipeToTag) {
+            onToggleFavorite?.(recipeToTag, category);
+          }
+        }}
+        userTags={userTags}
+        onCreateTag={onCreateTag}
+        onUpdateTag={onUpdateTag}
+        onDeleteTag={onDeleteTag}
+      />
     </div>
   );
 };

@@ -6,7 +6,7 @@ interface LandingViewProps {
 
 const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
   return (
-    <div className="bg-[#0A0A0A] font-body antialiased min-h-screen text-white overflow-x-hidden selection:bg-primary selection:text-black">
+    <div style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)' }} className="font-body antialiased min-h-screen overflow-x-hidden selection:bg-primary selection:text-black">
       {/* Custom Styles for Mobile and Desktop Animations */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -20,10 +20,10 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
             box-shadow: 0 0 25px rgba(57, 255, 20, 0.4);
         }
         .bg-hero-image-custom {
-            background-image: linear-gradient(to bottom, rgba(10, 10, 10, 0.85) 0%, rgba(10, 10, 10, 1) 100%), url(/portada-pc.png);
+            background-image: linear-gradient(to bottom, rgba(var(--bg-app-rgb), 0.85) 0%, rgba(var(--bg-app-rgb), 1) 100%), url(/portada-pc.png);
         }
         .dish-card-shadow {
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(57, 255, 20, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(var(--primary-rgb), 0.15);
         }
         .scan-line-custom {
             height: 2px;
@@ -47,14 +47,14 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
             transform-origin: bottom;
         }
         .floating-tag-custom {
-            background: rgba(10, 10, 10, 0.8);
+            background: rgba(var(--bg-app-rgb), 0.8);
             backdrop-filter: blur(10px);
-            border: 1px solid #39FF14;
+            border: 1px solid var(--primary);
         }
       `}} />
 
       {/* Navigation (Desktop only) */}
-      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4 sm:py-6 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/5 hidden lg:block">
+      <nav style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.8)', borderColor: 'var(--card-border)' }} className="fixed top-0 left-0 w-full z-50 px-6 py-4 sm:py-6 backdrop-blur-md border-b hidden lg:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3 group cursor-pointer transition-all duration-300">
             <div className="relative">
@@ -66,13 +66,13 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display font-black text-2xl tracking-tighter text-white leading-none">
-                ChefScan<span className="text-[#39FF14]">.IA</span>
+              <span style={{ color: 'var(--text-main)' }} className="font-display font-black text-2xl tracking-tighter leading-none">
+                ChefScan<span className="text-primary">.IA</span>
               </span>
-              <span className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 mt-0.5">Premium Kitchen IA</span>
+              <span style={{ color: 'var(--text-muted)' }} className="text-[8px] font-black uppercase tracking-[0.3em] mt-0.5">Premium Kitchen IA</span>
             </div>
           </div>
-          <button className="px-5 py-2 bg-[#39FF14] text-black rounded-full text-xs font-bold hover:bg-[#32e612] transition-all shadow-[0_0_15px_rgba(57,255,20,0.3)]">
+          <button style={{ backgroundColor: 'var(--primary)' }} className="px-5 py-2 text-black rounded-full text-xs font-bold hover:brightness-110 transition-all shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]">
             Descargar App
           </button>
         </div>
@@ -80,7 +80,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
 
       <main className="relative lg:pt-24 lg:pb-20">
         {/* --- MOBILE VERSION (HIDDEN ON LG) --- */}
-        <div className="lg:hidden relative flex min-h-screen w-full flex-col overflow-hidden bg-[#0a0a0a]">
+        <div style={{ backgroundColor: 'var(--bg-app)' }} className="lg:hidden relative flex min-h-screen w-full flex-col overflow-hidden">
           {/* Background Elements */}
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-hero-image-custom bg-cover bg-center opacity-40"></div>
@@ -91,11 +91,11 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
           {/* Mobile Header/Logo */}
           <div className="relative z-20 flex flex-col items-center pt-12 px-6 w-full">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-14 h-14 bg-[#0a0a0a] rounded-2xl flex items-center justify-center neon-glow border border-[#39FF14]/30 overflow-hidden">
+              <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }} className="w-14 h-14 rounded-2xl flex items-center justify-center neon-glow border overflow-hidden">
                 <img src="/landing-logo.png" alt="Logo" className="w-10 h-10 object-contain" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tighter drop-shadow-lg mt-2">
-                <span className="text-white">Chef</span><span className="text-[#39FF14]">Scan.IA</span>
+              <h2 style={{ color: 'var(--text-main)' }} className="text-2xl font-bold tracking-tighter drop-shadow-lg mt-2">
+                Chef<span className="text-primary">Scan.IA</span>
               </h2>
             </div>
           </div>
@@ -116,8 +116,8 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
 
               <div className="space-y-4 px-2 pb-2 text-center">
                 <div className="flex justify-center items-center gap-2">
-                  <h3 className="text-white text-xl font-bold tracking-tight">Ingrediente Detectado</h3>
-                  <span className="material-symbols-outlined text-[#39FF14] text-lg notranslate">check_circle</span>
+                  <h3 style={{ color: 'var(--text-main)' }} className="text-xl font-bold tracking-tight">Ingrediente Detectado</h3>
+                  <span className="material-symbols-outlined text-primary text-lg notranslate">check_circle</span>
                 </div>
                 <div className="flex justify-center items-center gap-1.5 overflow-hidden">
                   <span className="text-[9px] flex-1 py-1.5 bg-white/5 rounded-full text-white/70 border border-white/5 font-medium uppercase tracking-wider whitespace-nowrap">98% Match</span>
@@ -131,24 +131,26 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
           {/* Mobile Footer/Buttons */}
           <div className="relative z-20 flex flex-col px-6 pb-12 w-full gap-8">
             <div className="text-center space-y-3">
-              <h1 className="text-3xl font-display font-bold leading-tight tracking-tight text-white px-2 uppercase">
+              <h1 style={{ color: 'var(--text-main)' }} className="text-3xl font-display font-bold leading-tight tracking-tight px-2 uppercase">
                 Reconocimiento de<br />
-                <span className="text-[#39FF14] italic">precisión IA</span>
+                <span className="text-primary italic">precisión IA</span>
               </h1>
-              <p className="text-white/60 text-sm leading-relaxed max-w-[280px] mx-auto">
+              <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed max-w-[280px] mx-auto">
                 Apunta tu cámara a cualquier ingrediente y descubre infinitas posibilidades culinarias.
               </p>
             </div>
             <div className="flex flex-col gap-3 w-full">
               <button
                 onClick={onStart}
-                className="flex h-16 w-full items-center justify-center rounded-full bg-[#39FF14] text-black text-lg font-black tracking-widest uppercase neon-glow hover:brightness-110 active:scale-[0.98] transition-all border-none"
+                style={{ backgroundColor: 'var(--primary)' }}
+                className="flex h-16 w-full items-center justify-center rounded-full text-black text-lg font-black tracking-widest uppercase neon-glow hover:brightness-110 active:scale-[0.98] transition-all border-none"
               >
                 Comenzar ahora
               </button>
               <button
                 onClick={onStart}
-                className="flex h-16 w-full items-center justify-center rounded-full bg-transparent border-2 border-white/20 text-white text-lg font-bold tracking-widest uppercase hover:bg-white/5 active:scale-[0.98] transition-all backdrop-blur-sm"
+                style={{ color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+                className="flex h-16 w-full items-center justify-center rounded-full bg-transparent border-2 text-lg font-bold tracking-widest uppercase hover:bg-white/5 active:scale-[0.98] transition-all backdrop-blur-sm"
               >
                 Ya tengo una cuenta
               </button>
@@ -181,13 +183,13 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
                   </div>
 
                   <div className="space-y-6">
-                    <h1 className="font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl leading-[1.1] tracking-tight text-white">
+                    <h1 style={{ color: 'var(--text-main)' }} className="font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl leading-[1.1] tracking-tight">
                       Transforma tus <br />
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#39FF14] to-green-400 [text-shadow:0_0_20px_rgba(57,255,20,0.4)]">ingredientes</span> <br />
                       en obras maestras.
                     </h1>
 
-                    <p className="text-gray-400 text-lg sm:text-xl leading-relaxed font-light max-w-xl">
+                    <p style={{ color: 'var(--text-muted)' }} className="text-lg sm:text-xl leading-relaxed font-light max-w-xl">
                       Nuestra IA avanzada reconoce visualmente lo que tienes en tu cocina y diseña recetas gourmet personalizadas en segundos.
                     </p>
                   </div>
@@ -197,14 +199,16 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       onClick={onStart}
-                      className="w-full sm:w-auto px-8 py-6 bg-[#39FF14] text-black hover:bg-[#32e612] transition-all duration-300 rounded-2xl shadow-2xl shadow-[#39FF14]/30 font-bold text-lg flex items-center justify-center group border-none"
+                      style={{ backgroundColor: 'var(--primary)' }}
+                      className="w-full sm:w-auto px-8 py-6 text-black hover:brightness-110 transition-all duration-300 rounded-2xl shadow-2xl shadow-[#39FF14]/30 font-bold text-lg flex items-center justify-center group border-none"
                     >
                       Comenzar ahora
                       <span className="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform h-6 w-6 notranslate text-black">arrow_forward</span>
                     </button>
                     <button
                       onClick={onStart}
-                      className="w-full sm:w-auto px-8 py-6 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-300 rounded-2xl font-bold text-lg border border-white/10 text-white"
+                      style={{ color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+                      className="w-full sm:w-auto px-8 py-6 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-300 rounded-2xl font-bold text-lg border"
                     >
                       Ya tengo una cuenta
                     </button>

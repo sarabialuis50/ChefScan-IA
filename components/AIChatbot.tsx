@@ -249,13 +249,13 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
         <img src="/chefbot_final.png" alt="ChefScan AI" className="w-10 h-10 object-contain" />
         <span className="absolute -top-1 -right-1 flex h-4 w-4">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-white"></span>
+          <span className="relative inline-flex rounded-full h-4 w-4 bg-white border border-primary shadow-[0_0_10px_rgba(57,255,20,0.5)]"></span>
         </span>
       </button>
 
       {/* Chat Window Container - z-[100] para estar sobre TODO */}
       <div className={`absolute inset-0 flex flex-col items-center justify-end p-4 transition-all duration-500 pointer-events-none ${isOpen ? 'opacity-100 z-[100]' : 'opacity-0 z-[-1]'}`}>
-        <div className={`w-full max-w-[400px] h-[600px] max-h-[80vh] bg-black border border-primary/30 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden pointer-events-auto transition-transform duration-500 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div style={{ backgroundColor: 'var(--bg-app)', borderColor: 'var(--card-border)' }} className={`w-full max-w-[400px] h-[600px] max-h-[80vh] border rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden pointer-events-auto transition-transform duration-500 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
 
           {/* Header */}
           <div className="bg-primary/5 p-6 border-b border-primary/20 flex items-center justify-between">
@@ -264,7 +264,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                 <img src="/chefbot_final.png" alt="ChefScan AI" className="w-10 h-10 object-contain" />
               </div>
               <div>
-                <h3 className="font-outfit font-black text-xl tracking-tighter text-white leading-none">
+                <h3 style={{ color: 'var(--text-main)' }} className="font-outfit font-black text-xl tracking-tighter leading-none">
                   Chef<span className="text-primary">Scan.IA</span>
                 </h3>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -272,7 +272,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                     <span className="material-symbols-outlined text-[10px]">workspace_premium</span>
                     {isPremium ? 'Créditos Ilimitados' : `${chefCredits} Créditos de Chef`}
                   </div>
-                  {isPremium && <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest leading-none">PRO Plan</span>}
+                  {isPremium && <span style={{ color: 'var(--text-muted)' }} className="text-[8px] font-bold uppercase tracking-widest leading-none">PRO Plan</span>}
                 </div>
               </div>
             </div>
@@ -287,13 +287,13 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
             {chefCredits <= 0 && !isPremium && (
-              <div className="bg-zinc-900/80 border border-primary/20 p-6 rounded-3xl text-center space-y-4 animate-in fade-in zoom-in duration-300">
+              <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="border p-6 rounded-3xl text-center space-y-4 animate-in fade-in zoom-in duration-300">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
                   <span className="material-symbols-outlined text-primary">analytics</span>
                 </div>
                 <div>
-                  <h4 className="text-sm font-black uppercase text-white tracking-widest">Créditos Agotados</h4>
-                  <p className="text-[10px] text-zinc-400 mt-1">¿Te quedaste sin Sabiduría de Chef? Consigue más:</p>
+                  <h4 style={{ color: 'var(--text-main)' }} className="text-sm font-black uppercase tracking-widest">Créditos Agotados</h4>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-[10px] mt-1">¿Te quedaste sin Sabiduría de Chef? Consigue más:</p>
                 </div>
                 <div className="grid grid-cols-1 gap-2 pt-2">
                   <button
@@ -315,7 +315,8 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                   </button>
                   <button
                     onClick={onShowPremium}
-                    className="w-full py-4 bg-zinc-800 text-white font-black rounded-2xl uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
+                    style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)' }}
+                    className="w-full py-4 font-black rounded-2xl uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
                   >
                     <span className="material-symbols-outlined text-sm text-primary">stars</span>
                     Pasar a Premium (Ilimitado)
@@ -326,10 +327,14 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className="flex flex-col gap-1 max-w-[85%]">
-                  <div className={`p-4 rounded-2xl text-sm leading-relaxed relative ${msg.role === 'user'
-                    ? 'bg-primary text-black font-medium rounded-tr-none'
-                    : 'bg-zinc-900 text-zinc-300 border border-white/5 rounded-tl-none'
-                    }`}>
+                  <div
+                    style={{
+                      backgroundColor: msg.role === 'user' ? 'var(--primary)' : 'var(--bg-surface-soft)',
+                      color: msg.role === 'user' ? 'black' : 'var(--text-main)',
+                      borderColor: 'var(--card-border)'
+                    }}
+                    className={`p-4 rounded-2xl text-sm leading-relaxed relative border ${msg.role === 'user' ? 'font-medium rounded-tr-none border-transparent' : 'rounded-tl-none'}`}
+                  >
                     {msg.text}
                     {msg.role === 'model' && (
                       <button
@@ -350,7 +355,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-zinc-900 p-4 rounded-2xl rounded-tl-none border border-white/5 flex gap-1">
+                <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-2xl rounded-tl-none border flex gap-1">
                   <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></div>
                   <div className="w-1.5 h-1.5 bg-primary/70 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                   <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]"></div>
@@ -361,7 +366,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
           </div>
 
           {/* Input */}
-          <div className="p-6 bg-zinc-950/50 border-t border-white/5">
+          <div style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.5)', borderColor: 'var(--card-border)' }} className="p-6 border-t backdrop-blur-sm">
             <div className="relative flex gap-2">
               <div className="relative flex-1">
                 <input
@@ -370,7 +375,8 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                   placeholder={isRecording ? "Escuchando..." : (chefCredits <= 0 && !isPremium ? "Sin créditos..." : "Pregunta algo al Chef...")}
-                  className="w-full bg-black border border-zinc-800 rounded-2xl py-4 pl-4 pr-14 text-sm text-white placeholder-zinc-600 focus:border-primary/50 transition-all outline-none"
+                  style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+                  className="w-full border rounded-2xl py-4 pl-4 pr-14 text-sm placeholder-zinc-600 focus:border-primary/50 transition-all outline-none"
                   disabled={isRecording || (chefCredits <= 0 && !isPremium)}
                 />
                 <button
@@ -384,17 +390,15 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
               <button
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isLoading}
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg ${isRecording
-                  ? 'bg-red-500 text-white animate-pulse shadow-red-500/20'
-                  : 'bg-zinc-900 text-primary border border-primary/20 hover:border-primary active:scale-90'
-                  }`}
+                style={{ backgroundColor: isRecording ? '#ef4444' : 'var(--bg-surface-soft)', borderColor: isRecording ? '#ef4444' : 'var(--card-border)' }}
+                className={`w-14 h-14 rounded-2xl border flex items-center justify-center transition-all shadow-lg ${isRecording ? 'text-white animate-pulse shadow-red-500/20' : 'text-primary active:scale-90'}`}
               >
                 <span className="material-symbols-outlined font-black text-2xl">
                   {isRecording ? 'stop' : 'mic'}
                 </span>
               </button>
             </div>
-            <p className="text-center text-[8px] text-zinc-700 font-bold uppercase tracking-[0.2em] mt-4">IA con entrada y salida de voz activada</p>
+            <p style={{ color: 'var(--text-muted)' }} className="text-center text-[8px] font-bold uppercase tracking-[0.2em] mt-4">IA con entrada y salida de voz activada</p>
           </div>
         </div>
       </div>

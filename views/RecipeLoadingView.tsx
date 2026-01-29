@@ -42,48 +42,46 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
   }, [isFinished, progress]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-[#050B08] flex flex-col items-center justify-between p-8 overflow-hidden">
+    <div style={{ backgroundColor: 'var(--bg-app)' }} className="fixed inset-0 z-[100] flex flex-col items-center justify-between p-8 overflow-hidden">
       {/* Back/Close button */}
       <button
         onClick={onCancel}
-        className="absolute top-12 left-8 text-white/60 hover:text-white transition-colors"
+        className="absolute top-12 left-8 text-zinc-500 hover:text-primary transition-colors"
       >
         <span className="material-symbols-outlined text-3xl">arrow_back</span>
       </button>
 
       {/* Center Graphic */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-sm">
-        <div className="relative w-72 h-72 mb-12">
-          {/* Decorative Rings */}
-          <div className="absolute inset-0 border border-primary/10 rounded-full scale-110"></div>
-          <div className="absolute inset-0 border border-primary/5 rounded-full scale-125"></div>
+        <div className="relative w-72 h-72 mb-12 flex items-center justify-center">
+          {/* Decorative Rings - Refined for better centering and smoothness */}
+          <div className="absolute inset-0 border border-primary/20 rounded-full scale-[1.15] animate-pulse-slow"></div>
+          <div className="absolute inset-0 border border-primary/10 rounded-full scale-[1.3] opacity-50"></div>
 
-          {/* Orbital dots */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary/40 rounded-full"></div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rounded-full neon-glow"></div>
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary/20 rounded-full"></div>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary/20 rounded-full"></div>
+          {/* Orbital dots - Better positioned */}
+          <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-2 h-2 bg-primary/40 rounded-full"></div>
+          <div className="absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-primary rounded-full shadow-[0_0_15px_rgba(57,255,20,0.8)]"></div>
 
-          {/* Main Dish Image Container */}
-          <div className="w-full h-full rounded-full overflow-hidden border-4 border-zinc-900/50 shadow-[0_0_50px_rgba(57,255,20,0.15)] relative group">
+          {/* Main Dish Image Container - Improved for cleanliness */}
+          <div className="w-full h-full rounded-full overflow-hidden border border-primary/30 shadow-[0_0_80px_rgba(57,255,20,0.2)] relative group bg-zinc-900">
             <img
-              src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=600"
+              src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=800"
               alt="Platillo"
-              className="w-full h-full object-cover scale-110 grayscale-[0.3] brightness-75"
+              className="w-full h-full object-cover scale-110 grayscale-[0.2] brightness-90 animate-subtle-zoom"
             />
-            {/* Pulsing Overlay */}
-            <div className="absolute inset-0 bg-primary/10 animate-pulse-slow mix-blend-overlay"></div>
+            {/* Soft Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-transparent to-primary/10"></div>
 
-            {/* Logo Overlay */}
+            {/* Logo Overlay - Centered with flex */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-primary/90 rounded-2xl p-2 shadow-strong animate-float">
-                <img src="/chefbot_final.png" alt="ChefScan AI" className="w-14 h-14 object-contain" />
+              <div className="bg-primary/95 rounded-[2rem] p-3 shadow-[0_10px_30px_rgba(0,0,0,0.3)] animate-float border border-white/20">
+                <img src="/chefbot_final.png" alt="ChefScan AI" className="w-16 h-16 object-contain" />
               </div>
             </div>
           </div>
 
           {/* AI Status Tag */}
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900/80 border border-primary/40 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2">
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--primary-half)' }} className="absolute -bottom-6 left-1/2 -translate-x-1/2 border backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_5px_#39FF14]"></div>
             <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em]">AI CHEF</span>
           </div>
@@ -91,7 +89,7 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
 
         {/* Text Section */}
         <div className="text-center space-y-4">
-          <h2 className="text-white text-3xl font-bold font-outfit">Generando tu Receta...</h2>
+          <h2 style={{ color: 'var(--text-main)' }} className="text-3xl font-bold font-outfit">Generando tu Receta...</h2>
           <p className="text-zinc-500 text-sm leading-relaxed max-w-[280px] mx-auto">
             Analizando tus ingredientes para crear algo delicioso y único.
           </p>
@@ -108,7 +106,7 @@ const RecipeLoadingView: React.FC<RecipeLoadingViewProps> = ({ onCancel, isFinis
           <span className="text-xs font-tech text-zinc-500">{Math.floor(progress)}%</span>
         </div>
 
-        <div className="h-1.5 w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/5 relative">
+        <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="h-1.5 w-full rounded-full overflow-hidden border relative">
           <div
             className="h-full bg-primary rounded-full neon-glow transition-all duration-300"
             style={{ width: `${progress}%` }}

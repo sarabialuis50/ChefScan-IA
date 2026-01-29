@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
 import { getRecipeImage } from '../utils/imageUtils';
+import SaveFavoriteModal from '../components/SaveFavoriteModal';
 
 interface RecipeDetailViewProps {
   recipe: Recipe | null;
@@ -11,6 +12,7 @@ interface RecipeDetailViewProps {
   onStartCooking?: () => void;
   onShare?: () => void;
   isPremium?: boolean;
+  userTags?: string[];
   onCreateTag?: (tag: string) => void;
   onUpdateTag?: (oldName: string, newName: string) => void;
   onDeleteTag?: (tag: string) => void;
@@ -19,56 +21,16 @@ interface RecipeDetailViewProps {
 const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite, onToggleFavorite, onBack, onNutritionClick, onStartCooking, onShare, isPremium, userTags = [], onCreateTag, onUpdateTag, onDeleteTag }) => {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
-  const [isAddingNewTag, setIsAddingNewTag] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
-  const [tagMenuOpen, setTagMenuOpen] = useState<string | null>(null);
-  const [editingTag, setEditingTag] = useState<{ oldName: string, newName: string } | null>(null);
 
   if (!recipe) return null;
 
   const handleNutritionClick = () => {
-    // Para pruebas permitimos entrar siempre
     if (onNutritionClick) {
       onNutritionClick();
     }
   };
 
-  const defaultCategories = ['Desayuno', 'Almuerzo', 'Cena', 'Saludable', 'Vegana'];
-  const allCategories = [...new Set([...defaultCategories, ...userTags])];
-
-  const handleCreateTag = () => {
-    if (newTagName.trim() && onCreateTag) {
-      onCreateTag(newTagName.trim());
-      onToggleFavorite(newTagName.trim());
-      setNewTagName('');
-      setIsAddingNewTag(false);
-      setShowTagModal(false);
-    }
-  };
-
-  const handleUpdateTagClick = (e: React.MouseEvent, oldName: string) => {
-    e.stopPropagation();
-    setEditingTag({ oldName, newName: oldName });
-    setTagMenuOpen(null);
-  };
-
-  const handleDeleteTagClick = (e: React.MouseEvent, tag: string) => {
-    e.stopPropagation();
-    if (confirm(`¿Estás seguro de que quieres eliminar la etiqueta "${tag}"?`)) {
-      if (onDeleteTag) onDeleteTag(tag);
-      setTagMenuOpen(null);
-    }
-  };
-
-  const submitUpdateTag = () => {
-    if (editingTag && editingTag.newName.trim() && onUpdateTag) {
-      onUpdateTag(editingTag.oldName, editingTag.newName.trim());
-      setEditingTag(null);
-    }
-  };
-
   const handleToggleFavorite = () => {
-    // Para pruebas permitimos usar etiquetas sin ser premium
     if (isFavorite) {
       onToggleFavorite();
     } else {
@@ -76,20 +38,15 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
     }
   };
 
-  const selectCategory = (cat: string) => {
-    onToggleFavorite(cat);
-    setShowTagModal(false);
-  };
-
   return (
-    <div className="min-h-screen bg-pure-black pb-12 text-white">
+    <div style={{ backgroundColor: 'var(--bg-app)' }} className="min-h-screen pb-12">
       <div className="relative h-96 w-full">
         <img
           src={getRecipeImage(recipe, 800)}
           alt={recipe.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-pure-black via-pure-black/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-app)] via-[var(--bg-app)]/20 to-transparent"></div>
 
         <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20">
           <button onClick={onBack} className="w-10 h-10 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
@@ -116,24 +73,24 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
 
         <div className="absolute bottom-[-1.25rem] left-0 px-6 space-y-2 z-20 w-full">
           <div className="flex items-center gap-2">
-            <div className={`px-2 py-0.5 rounded-full border text-[10px] font-black uppercase shadow-sm ${recipe.nutriScore === 'A' ? 'bg-green-500/20 border-green-500 text-green-500' :
-              recipe.nutriScore === 'B' ? 'bg-lime-500/20 border-lime-500 text-lime-500' :
-                recipe.nutriScore === 'C' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500' :
-                  recipe.nutriScore === 'D' ? 'bg-orange-500/20 border-orange-500 text-orange-500' :
-                    'bg-red-500/20 border-red-500 text-red-500'
+            <div className={`px-2.5 py-1 rounded-full border text-[10px] font-black uppercase shadow-sm ${recipe.nutriScore === 'A' ? 'bg-primary border-primary/40 text-black shadow-glow-subtle' :
+              recipe.nutriScore === 'B' ? 'bg-lime-500 border-lime-600 text-white' :
+                recipe.nutriScore === 'C' ? 'bg-yellow-500 border-yellow-600 text-black' :
+                  recipe.nutriScore === 'D' ? 'bg-orange-500 border-orange-600 text-white' :
+                    'bg-red-500 border-red-600 text-white'
               }`}>
               NutriScore {recipe.nutriScore || 'A'}
             </div>
-            <div className="inline-flex px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary text-[10px] font-black uppercase tracking-tight">
+            <div className="inline-flex px-2.5 py-1 rounded-full bg-primary border border-primary/40 text-black text-[10px] font-black uppercase tracking-tight shadow-glow-subtle">
               {recipe.matchPercentage || 100}% Match
             </div>
-            {recipe.category && (
-              <div className="inline-flex px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400 text-[10px] font-black uppercase tracking-tight shadow-[0_0_10px_rgba(59,130,246,0.2)]">
-                {recipe.category}
+            {(recipe.category || isFavorite) && (
+              <div className="inline-flex px-2.5 py-1 rounded-full bg-blue-500 border border-blue-600 text-white text-[10px] font-black uppercase tracking-tight shadow-sm">
+                {recipe.category || 'Favorita'}
               </div>
             )}
           </div>
-          <h1 className="text-3xl font-black font-tech uppercase leading-none text-white drop-shadow-2xl">{recipe.title}</h1>
+          <h1 style={{ color: 'var(--text-main)' }} className="text-3xl font-black font-tech uppercase leading-none drop-shadow-2xl">{recipe.title}</h1>
           <div className="flex items-center gap-4 mt-1">
             <p className="text-primary font-bold text-xs uppercase tracking-[0.2em]">Porciones: {recipe.portions || 2}</p>
             {isFavorite && (
@@ -148,19 +105,19 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
       <div className="p-6 space-y-8">
         {/* Info Grid - Basic Nutrition (High-Level) */}
         <div className="grid grid-cols-4 gap-3 py-4 mt-2">
-          <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+          <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
             <p className="text-primary text-sm font-black tracking-tight">{recipe.calories?.toString().replace(/kcal/i, '').trim() || 'N/A'}</p>
             <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Kcal</p>
           </div>
-          <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+          <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
             <p className="text-primary text-sm font-black tracking-tight">{recipe.protein || 'N/A'}</p>
             <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Prot</p>
           </div>
-          <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+          <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
             <p className="text-primary text-sm font-black tracking-tight">{recipe.carbs || 'N/A'}</p>
             <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Carb</p>
           </div>
-          <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+          <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
             <p className="text-primary text-sm font-black tracking-tight">{recipe.fat || 'N/A'}</p>
             <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Grasa</p>
           </div>
@@ -176,7 +133,7 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
               <span className="material-symbols-outlined text-xl">analytics</span>
             </div>
             <div className="text-left">
-              <p className="text-xs font-black uppercase tracking-widest text-white">Informe Nutricional</p>
+              <p style={{ color: 'var(--text-main)' }} className="text-xs font-black uppercase tracking-widest">Informe Nutricional</p>
               <p className="text-[10px] text-zinc-500 font-medium">{isPremium ? 'Ver análisis detallado' : 'Hazte Premium para ver detalles completos'}</p>
             </div>
           </div>
@@ -192,8 +149,8 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
           <ul className="space-y-4">
             {(recipe.ingredients || []).length > 0 ? recipe.ingredients.map((ing, idx) => (
               <li key={idx} className="flex items-center gap-4 group/item">
-                <div className="w-2 h-2 rounded-full border border-primary/40 group-hover/item:bg-primary transition-colors"></div>
-                <span className="text-sm text-zinc-300 font-medium tracking-tight group-hover/item:text-white transition-colors">{ing}</span>
+                <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(57,255,20,0.6)]"></div>
+                <span style={{ color: 'var(--text-main)' }} className="text-sm font-medium tracking-tight transition-colors opacity-80 group-hover/item:opacity-100">{ing}</span>
               </li>
             )) : (
               <li className="text-zinc-500 text-xs italic">No hay ingredientes listados.</li>
@@ -252,138 +209,28 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
         </div>
       </div>
 
-      {/* Tag Selection Modal */}
-      {showTagModal && (
-        <div className="absolute inset-0 z-[110] flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-[#0A0A0A] border-t border-primary/20 rounded-t-[3rem] p-8 pb-12 space-y-8 animate-in slide-in-from-bottom-full duration-500">
-            <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto"></div>
-            <div className="space-y-2 text-center">
-              <h3 className="text-xl font-bold uppercase tracking-tight text-white">¿Cómo quieres guardarla?</h3>
-              <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest">Organiza tu receta favoritas por etiqueta</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-              {allCategories.map((cat) => {
-                const isCustom = userTags.includes(cat);
-                return (
-                  <div key={cat} className="relative group/tag">
-                    <button
-                      onClick={() => selectCategory(cat)}
-                      className="w-full py-5 px-4 bg-zinc-900/50 border border-white/5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-400 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all active:scale-95"
-                    >
-                      {cat}
-                    </button>
-
-                    {isCustom && (
-                      <div className="absolute top-2 right-2 flex items-center gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTagMenuOpen(tagMenuOpen === cat ? null : cat);
-                          }}
-                          className="w-6 h-6 rounded-full bg-black/40 flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-sm">more_vert</span>
-                        </button>
-
-                        {tagMenuOpen === cat && (
-                          <div className="absolute top-8 right-0 w-32 bg-zinc-900 border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden animate-in fade-in zoom-in duration-200">
-                            <button
-                              onClick={(e) => handleUpdateTagClick(e, cat)}
-                              className="w-full py-3 px-4 text-[10px] font-bold text-left hover:bg-white/5 flex items-center gap-2 border-b border-white/5"
-                            >
-                              <span className="material-symbols-outlined text-sm">edit</span>
-                              EDITAR
-                            </button>
-                            <button
-                              onClick={(e) => handleDeleteTagClick(e, cat)}
-                              className="w-full py-3 px-4 text-[10px] font-bold text-left hover:bg-red-500/10 text-red-500 flex items-center gap-2"
-                            >
-                              <span className="material-symbols-outlined text-sm">delete</span>
-                              ELIMINAR
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              <button
-                onClick={() => setIsAddingNewTag(true)}
-                className="py-5 px-4 bg-primary/10 border border-primary/30 rounded-2xl text-xs font-black uppercase tracking-widest text-primary flex items-center justify-center gap-2 hover:bg-primary/20 transition-all active:scale-95 shadow-glow-subtle"
-              >
-                <span className="material-symbols-outlined text-sm font-black">add</span>
-                Nueva
-              </button>
-            </div>
-
-            {editingTag && (
-              <div className="space-y-4 animate-in slide-in-from-top-4 duration-300 bg-zinc-900/80 p-6 rounded-3xl border border-primary/20">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Renombrar Etiqueta</p>
-                  <button onClick={() => setEditingTag(null)} className="material-symbols-outlined text-zinc-600">close</button>
-                </div>
-                <input
-                  autoFocus
-                  type="text"
-                  value={editingTag.newName}
-                  onChange={(e) => setEditingTag({ ...editingTag, newName: e.target.value })}
-                  className="w-full bg-black border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:border-primary outline-none"
-                  onKeyDown={(e) => { if (e.key === 'Enter') submitUpdateTag(); }}
-                />
-                <button
-                  onClick={submitUpdateTag}
-                  className="w-full py-4 bg-primary text-black font-black rounded-xl uppercase text-[10px] tracking-widest shadow-glow"
-                >
-                  Confirmar Cambio
-                </button>
-              </div>
-            )}
-
-            {isAddingNewTag && (
-              <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Nombre de la etiqueta..."
-                  value={newTagName}
-                  onChange={(e) => setNewTagName(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleCreateTag(); }}
-                />
-                <button
-                  onClick={handleCreateTag}
-                  className="w-full py-4 bg-primary text-black font-black rounded-xl uppercase text-[10px] tracking-widest shadow-glow"
-                >
-                  Crear y Guardar
-                </button>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                setShowTagModal(false);
-                setIsAddingNewTag(false);
-              }}
-              className="w-full py-4 text-zinc-600 font-bold uppercase text-[9px] tracking-[0.3em]"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Selector de Etiquetas para Favoritos */}
+      <SaveFavoriteModal
+        isOpen={showTagModal}
+        recipe={recipe}
+        onClose={() => setShowTagModal(false)}
+        onSave={onToggleFavorite}
+        userTags={userTags}
+        onCreateTag={onCreateTag}
+        onUpdateTag={onUpdateTag}
+        onDeleteTag={onDeleteTag}
+      />
 
       {/* Premium Modal */}
       {showPremiumModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 bg-pure-black/90 backdrop-blur-md">
-          <div className="w-full max-w-sm glass-card rounded-3xl p-8 border-primary/30 space-y-6 text-center">
-            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center text-primary mx-auto neon-glow">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md" style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.9)' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-sm rounded-3xl p-8 border space-y-6 text-center">
+            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center text-primary mx-auto neon-glow border border-primary/30">
               <span className="material-symbols-outlined text-4xl">workspace_premium</span>
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-tech font-bold uppercase tracking-tight">Acceso Premium</h3>
-              <p className="text-zinc-400 text-sm">Desbloquea informe nutricional completo, recetas ilimitadas y tu Agente Chef IA personal.</p>
+              <h3 style={{ color: 'var(--text-main)' }} className="text-2xl font-tech font-bold uppercase tracking-tight">Acceso Premium</h3>
+              <p style={{ color: 'var(--text-muted)' }} className="text-sm">Desbloquea informe nutricional completo, recetas ilimitadas y tu Agente Chef IA personal.</p>
             </div>
             <div className="grid gap-3 pt-2">
               <button className="w-full py-4 bg-primary text-black rounded-xl font-bold uppercase text-xs tracking-widest neon-glow">

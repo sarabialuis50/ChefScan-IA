@@ -21,10 +21,10 @@ const NutritionalDetailView: React.FC<NutritionalDetailViewProps> = ({ recipe, o
     ];
 
     return (
-        <div className="min-h-screen bg-pure-black pb-12">
-            <header className="px-6 py-4 flex items-center justify-between border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-                <button onClick={onBack} className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center">
-                    <span className="material-symbols-outlined">arrow_back</span>
+        <div style={{ backgroundColor: 'var(--bg-app)' }} className="min-h-screen pb-12">
+            <header style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.8)', borderColor: 'var(--card-border)' }} className="px-6 py-4 flex items-center justify-between border-b backdrop-blur-md sticky top-0 z-50">
+                <button onClick={onBack} style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="w-10 h-10 rounded-full border flex items-center justify-center">
+                    <span className="material-symbols-outlined text-zinc-400">arrow_back</span>
                 </button>
                 <div className="text-center">
                     <h1 className="text-sm font-black uppercase tracking-[0.2em] text-primary">Informe Nutricional</h1>
@@ -35,7 +35,7 @@ const NutritionalDetailView: React.FC<NutritionalDetailViewProps> = ({ recipe, o
 
             <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Nutritional Card */}
-                <section className="bg-surface-dark border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+                <section style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="border rounded-[2.5rem] overflow-hidden shadow-2xl relative">
                     {/* Header Section with Image */}
                     <div className="h-[280px] w-full relative">
                         <img
@@ -43,31 +43,31 @@ const NutritionalDetailView: React.FC<NutritionalDetailViewProps> = ({ recipe, o
                             alt={recipe.title}
                             className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-surface)] via-transparent to-transparent"></div>
                     </div>
 
-                    <div className="p-8 space-y-6 relative z-10 bg-surface-dark">
+                    <div style={{ backgroundColor: 'var(--bg-surface)' }} className="p-8 space-y-6 relative z-10">
                         <div className="space-y-3">
                             <div className="text-left">
-                                <h2 className="text-xl font-black uppercase tracking-normal text-white px-2 leading-tight">{recipe.title}</h2>
+                                <h2 style={{ color: 'var(--text-main)' }} className="text-xl font-black uppercase tracking-normal px-2 leading-tight">{recipe.title}</h2>
                                 <p className="text-primary font-bold text-[10px] uppercase tracking-[0.2em] px-2 mt-1">Porciones: {recipe.portions || 2}</p>
                             </div>
 
                             {/* Info Grid - Exact match to RecipeDetailView */}
                             <div className="grid grid-cols-4 gap-3 py-2">
-                                <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+                                <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
                                     <p className="text-primary text-sm font-black tracking-tight">{recipe.calories?.toString().replace(/kcal/i, '').trim() || 'N/A'}</p>
                                     <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Kcal</p>
                                 </div>
-                                <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+                                <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
                                     <p className="text-primary text-sm font-black tracking-tight">{recipe.protein || 'N/A'}</p>
                                     <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Prot</p>
                                 </div>
-                                <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+                                <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
                                     <p className="text-primary text-sm font-black tracking-tight">{recipe.carbs || 'N/A'}</p>
                                     <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Carb</p>
                                 </div>
-                                <div className="bg-surface-dark/60 p-4 rounded-3xl border border-white/5 text-center shadow-inner hover:border-primary/20 transition-all">
+                                <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="p-4 rounded-3xl border text-center shadow-inner hover:border-primary/20 transition-all">
                                     <p className="text-primary text-sm font-black tracking-tight">{recipe.fat || 'N/A'}</p>
                                     <p className="text-[8px] text-zinc-600 uppercase font-black mt-1 tracking-widest">Grasa</p>
                                 </div>
@@ -85,10 +85,10 @@ const NutritionalDetailView: React.FC<NutritionalDetailViewProps> = ({ recipe, o
 
                     <div className="grid grid-cols-2 gap-4">
                         {micronutrients.map((micro, idx) => (
-                            <div key={idx} className="bg-zinc-900/40 border border-white/5 p-4 rounded-2xl space-y-3">
+                            <div key={idx} style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="border p-4 rounded-2xl space-y-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">{micro.name}</span>
-                                    <span className="text-[10px] font-black text-primary">{micro.value}{micro.unit}</span>
+                                    <span style={{ color: 'var(--primary)' }} className="text-[10px] font-black">{micro.value}{micro.unit}</span>
                                 </div>
                                 <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                                     <div
@@ -102,12 +102,12 @@ const NutritionalDetailView: React.FC<NutritionalDetailViewProps> = ({ recipe, o
                 </section>
 
                 {/* Premium Badge */}
-                <div className="bg-primary/5 border border-primary/20 p-6 rounded-3xl flex items-center gap-4">
+                <div style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.05)', borderColor: 'rgba(var(--primary-rgb), 0.2)' }} className="border p-6 rounded-3xl flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-black">
                         <span className="material-symbols-outlined font-black">verified</span>
                     </div>
                     <div>
-                        <p className="text-xs font-black text-white uppercase tracking-tight">Análisis IA Certificado</p>
+                        <p style={{ color: 'var(--text-main)' }} className="text-xs font-black uppercase tracking-tight">Análisis IA Certificado</p>
                         <p className="text-[10px] text-zinc-500">Este informe ha sido generado y verificado por el modelo neuronal de ChefScan.IA</p>
                     </div>
                 </div>

@@ -23,9 +23,9 @@ const ImageWithPlaceholder: React.FC<{ imageUrl?: string, id: string, alt: strin
   const finalSrc = getRecipeImage({ imageUrl, id }, 200);
 
   return (
-    <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 shadow-lg overflow-hidden relative">
+    <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="w-16 h-16 rounded-2xl border shadow-lg overflow-hidden relative">
       {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-zinc-800 flex items-center justify-center">
+        <div style={{ backgroundColor: 'var(--bg-surface-inner)' }} className="absolute inset-0 animate-pulse flex items-center justify-center">
           <span className="material-symbols-outlined text-zinc-700 text-sm">image</span>
         </div>
       )}
@@ -64,11 +64,12 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onBack, onRecipeClic
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center active:scale-90 transition-all mr-2"
+              style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }}
+              className="w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition-all mr-2"
             >
-              <span className="material-symbols-outlined text-white text-xl">arrow_back</span>
+              <span className="material-symbols-outlined text-primary text-xl">arrow_back</span>
             </button>
-            <h2 className="text-xl font-bold tracking-tight font-outfit uppercase">Recetas Recientes</h2>
+            <h2 style={{ color: 'var(--text-main)' }} className="text-xl font-bold tracking-tight font-outfit uppercase">Recetas Recientes</h2>
           </div>
           <div className="px-3 py-1 bg-primary/10 rounded-full border border-primary/20 text-[10px] font-bold text-primary">
             {filteredHistory.length} items
@@ -77,26 +78,32 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onBack, onRecipeClic
 
         {/* Search Bar */}
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-zinc-500">search</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary">search</span>
           <input
             type="text"
             placeholder="Buscar en el historial..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-black border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-sm text-white placeholder-zinc-700 focus:border-primary/40 outline-none transition-all"
+            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+            className="w-full border rounded-2xl py-4 pl-12 pr-4 text-sm placeholder-zinc-500 focus:border-primary/40 outline-none transition-all"
           />
         </div>
 
         {/* Categories Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-4 px-1 no-scrollbar scrollbar-hide">
           {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${activeCategory === cat
-                ? 'bg-primary text-black shadow-lg shadow-primary/20'
-                : 'bg-zinc-900 text-zinc-500 border border-white/5 hover:border-white/10'
+              className={`flex-shrink-0 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border hover:bg-primary/10 ${activeCategory === cat
+                ? 'shadow-lg shadow-primary/20'
+                : ''
                 }`}
+              style={{
+                backgroundColor: activeCategory === cat ? '#39FF14' : 'var(--bg-surface-soft)',
+                borderColor: activeCategory === cat ? '#39FF14' : 'var(--card-border)',
+                color: activeCategory === cat ? '#000000' : 'var(--text-muted)'
+              }}
             >
               {cat}
             </button>
@@ -105,13 +112,13 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onBack, onRecipeClic
       </header>
 
       {filteredHistory.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-zinc-600 text-center space-y-4">
-          <div className="w-20 h-20 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center">
+        <div style={{ color: 'var(--text-muted)' }} className="flex flex-col items-center justify-center py-24 text-center space-y-4">
+          <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="w-20 h-20 rounded-full border flex items-center justify-center">
             <span className="material-symbols-outlined text-4xl opacity-20">history_toggle_off</span>
           </div>
           <div>
-            <p className="text-[10px] uppercase font-bold tracking-[0.2em] mb-1 text-zinc-500">Sin resultados</p>
-            <p className="text-xs text-zinc-600">No se encontraron recetas en esta categoría.</p>
+            <p className="text-[10px] uppercase font-bold tracking-[0.2em] mb-1">Sin resultados</p>
+            <p className="text-xs">No se encontraron recetas en esta categoría.</p>
           </div>
         </div>
       ) : (
@@ -134,7 +141,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onBack, onRecipeClic
                 };
                 onRecipeClick(recipeToOpen);
               }}
-              className="group relative flex items-center gap-4 glass-card p-4 rounded-3xl hover:bg-primary/5 transition-all cursor-pointer border-white/5 hover:border-primary/20 shadow-xl overflow-hidden"
+              className="group relative flex items-center gap-4 p-4 rounded-3xl transition-all cursor-pointer border shadow-xl overflow-hidden"
+              style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }}
             >
               {/* Background Glow */}
               <div className="absolute top-0 right-0 w-24 h-full bg-primary/5 blur-3xl group-hover:bg-primary/10 transition-colors"></div>
@@ -149,16 +157,16 @@ const HistoryView: React.FC<HistoryViewProps> = ({ history, onBack, onRecipeClic
               </div>
 
               <div className="flex-1 min-w-0 z-10">
-                <h4 className="text-white text-base font-bold truncate uppercase tracking-tight mb-0.5">{item.recipe}</h4>
+                <h4 style={{ color: 'var(--text-main)' }} className="text-base font-bold truncate uppercase tracking-tight mb-0.5">{item.recipe}</h4>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.1em]">Base:</span>
+                  <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-[0.1em]">Base:</span>
                   <p className="text-primary/70 text-[10px] font-black truncate uppercase">{item.ingredient}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-zinc-600 text-[9px] font-bold uppercase tracking-tighter flex items-center gap-1">
+                  <span style={{ color: 'var(--text-muted)' }} className="text-[9px] font-bold uppercase tracking-tighter flex items-center gap-1">
                     <span className="material-symbols-outlined text-[12px]">calendar_today</span> {item.date}
                   </span>
-                  <span className="text-zinc-600 text-[9px] font-bold uppercase tracking-tighter flex items-center gap-1">
+                  <span style={{ color: 'var(--text-muted)' }} className="text-[9px] font-bold uppercase tracking-tighter flex items-center gap-1">
                     <span className="material-symbols-outlined text-[12px]">schedule</span> {item.time}
                   </span>
                 </div>

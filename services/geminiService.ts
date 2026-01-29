@@ -54,9 +54,28 @@ export const generateRecipes = async (
         role: 'user',
         parts: [{
           text: `Actúa como Chef Ejecutivo. Crea ${count} recetas creativas con: ${ingredients.join(", ")}. Porciones: ${portions}. Alergias: ${allergies ? allergies.join(", ") : "ninguna"}. Meta: ${cookingGoal}. 
-        IMPORTANTE: Devuelve ÚNICAMENTE el arreglo JSON, sin introducciones, sin saludos y sin explicaciones. 
-        Formato: arreglo JSON de objetos Recipe (id, title, description, ingredients, instructions, nutriScore, photoQuery). 
-        Asegúrate de que "photoQuery" sean 2-3 palabras clave en INGLÉS descriptivas del plato para búsqueda de imágenes. Todo lo demás en ESPAÑOL.` }]
+        IMPORTANTE: Devuelve ÚNICAMENTE el arreglo JSON, sin introducciones.
+        Formato: arreglo JSON de objetos Recipe con estos campos exactos:
+        {
+          "id": "string",
+          "title": "string",
+          "description": "string",
+          "portions": number,
+          "prepTime": "string",
+          "difficulty": "string",
+          "calories": "string",
+          "protein": "string",
+          "carbs": "string",
+          "fat": "string",
+          "ingredients": ["string"],
+          "instructions": ["string"],
+          "tips": ["string"],
+          "nutriScore": "A" | "B" | "C" | "D",
+          "matchPercentage": number,
+          "photoQuery": "string"
+        }
+        REGLA CRÍTICA: El campo "tips" DEBE ser un arreglo con la misma cantidad de elementos que "instructions". Cada tip debe ser un consejo profesional de chef específico para su paso correspondiente. No repitas tips.
+        Asegúrate de que "photoQuery" sean 2-3 palabras clave en INGLÉS. Todo lo demás en ESPAÑOL.` }]
       }]
     });
 

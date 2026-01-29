@@ -638,36 +638,46 @@ const App: React.FC = () => {
   const toggleFavorite = async (recipe: Recipe, category: string = 'Otra') => {
     if (!state.user?.id) return;
 
-    // Permitimos hasta 5 favoritos para usuarios FREE
-    if (!state.user?.isPremium &&
-      !state.favoriteRecipes.some(r => r.id === recipe.id) &&
-      state.favoriteRecipes.length >= 5) {
-      setPremiumModal({ isOpen: true, reason: 'recipes' });
-      return;
-    }
+    // Comprobación de existencia en favoritos (por ID real o por contenido para IDs temporales)
+    const favoriteMatch = state.favoriteRecipes.find(r =>
+      r.id === recipe.id || (r.title === recipe.title && r.description === recipe.description)
+    );
 
-    const isFavorite = state.favoriteRecipes.some(r => r.id === recipe.id);
+    const isFavorite = !!favoriteMatch;
 
     if (isFavorite) {
-      // Remove from favorites
+      // Toggle: Eliminar de favoritos
+      // Usamos el ID de la receta que ya está en la lista de favoritos (que será el ID permanente)
+      const targetId = favoriteMatch.id;
+
       const { error } = await supabase
         .from('favorites')
         .delete()
         .eq('user_id', state.user.id)
-        .eq('recipe_id', recipe.id);
+        .eq('recipe_id', targetId);
 
       if (!error) {
         setState(prev => ({
           ...prev,
-          favoriteRecipes: prev.favoriteRecipes.filter(r => r.id !== recipe.id)
+          favoriteRecipes: prev.favoriteRecipes.filter(r => r.id !== targetId),
+          // Si estamos en recientes, reseteamos el ID a uno temporal para que visualmente sepa que ya no es favorito persistente
+          recentRecipes: prev.recentRecipes.map(r =>
+            (r.title === recipe.title && r.description === recipe.description) ? { ...r, id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` } : r
+          )
         }));
-        // Limpiar la categoría de la receta seleccionada para que desaparezca la etiqueta azul
-        if (selectedRecipe?.id === recipe.id) {
+
+        if (selectedRecipe?.id === targetId) {
           const { category, ...recipeWithoutCategory } = selectedRecipe;
           setSelectedRecipe(recipeWithoutCategory as Recipe);
         }
       }
     } else {
+      // Permitimos hasta 5 favoritos para usuarios FREE
+      if (!state.user?.isPremium && state.favoriteRecipes.length >= 5) {
+        setPremiumModal({ isOpen: true, reason: 'recipes' });
+        return;
+      }
+
       // Add to favorites
       let permanentId = recipe.id;
 
@@ -699,11 +709,13 @@ const App: React.FC = () => {
       if (!favError) {
         const updatedRecipe = { ...recipe, id: permanentId, category };
 
-        // Actualizamos de forma atómica para evitar que el UI pierda la referencia
         setSelectedRecipe(updatedRecipe);
         setState(prev => ({
           ...prev,
-          favoriteRecipes: [updatedRecipe, ...prev.favoriteRecipes]
+          favoriteRecipes: [updatedRecipe, ...prev.favoriteRecipes],
+          recentRecipes: prev.recentRecipes.map(r =>
+            (r.title === recipe.title && r.description === recipe.description) ? updatedRecipe : r
+          )
         }));
       } else {
         console.error("Error saving favorite:", favError);
@@ -739,13 +751,15 @@ const App: React.FC = () => {
           <Layout activeNav="dashboard" onNavClick={navigateTo}>
             <DashboardView
               user={state.user}
-              recentRecipes={state.favoriteRecipes}
+              recentRecipes={state.recentRecipes}
+              favoriteRecipes={state.favoriteRecipes}
               scannedIngredients={state.scannedIngredients}
               scannedImage={state.scannedImage}
               onClearScanned={() => setState(prev => ({ ...prev, scannedIngredients: [], scannedImage: undefined }))}
               onScanClick={() => navigateTo('scanner')}
               onRecipeClick={handleSelectRecipe}
               onGenerate={() => { }}
+              onToggleFavorite={toggleFavorite}
               onStartGeneration={handleStartGeneration}
               onExploreClick={() => navigateTo('explore')}
               onNotificationsClick={() => navigateTo('notifications')}
@@ -758,6 +772,10 @@ const App: React.FC = () => {
               onBack={() => navigateTo('landing')}
               isDarkMode={isDarkMode}
               onThemeToggle={() => setIsDarkMode(!isDarkMode)}
+              userTags={state.userTags}
+              onCreateTag={handleCreateTag}
+              onUpdateTag={handleUpdateTag}
+              onDeleteTag={handleDeleteTag}
             />
           </Layout>
         );

@@ -69,14 +69,14 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
   });
 
   return (
-    <div className="flex flex-col bg-pure-black min-h-full p-6 space-y-6 pb-32">
+    <div style={{ backgroundColor: 'var(--bg-app)' }} className="flex flex-col min-h-full p-6 space-y-6 pb-32">
       {/* Header */}
       <header className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 active:scale-90 transition-all">
-            <span className="material-symbols-outlined text-primary">arrow_back</span>
+          <button onClick={onBack} style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="w-10 h-10 flex items-center justify-center rounded-full border active:scale-90 transition-all">
+            <span className="material-symbols-outlined text-zinc-400">arrow_back</span>
           </button>
-          <h1 className="text-white font-bold text-xl uppercase tracking-wider font-outfit">Notificaciones<span className="text-primary">.IA</span></h1>
+          <h1 style={{ color: 'var(--text-main)' }} className="font-bold text-xl uppercase tracking-wider font-outfit">Notificaciones<span className="text-primary">.IA</span></h1>
         </div>
         <button
           onClick={markAllRead}
@@ -94,8 +94,13 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
             onClick={() => setActiveFilter(filter)}
             className={`px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeFilter === filter
               ? 'bg-primary text-black shadow-neon-glow'
-              : 'bg-zinc-900/50 text-zinc-500 border border-zinc-800'
+              : 'border'
               }`}
+            style={{
+              backgroundColor: activeFilter === filter ? 'var(--primary)' : 'var(--bg-surface-soft)',
+              borderColor: 'var(--card-border)',
+              color: activeFilter === filter ? '#000' : 'var(--text-muted)'
+            }}
           >
             {filter}
           </button>
@@ -113,24 +118,31 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
                   n.id === notif.id ? { ...n, unread: false } : n
                 ));
               }}
-              className={`relative glass-card rounded-[1.5rem] p-4 flex gap-4 border transition-all cursor-pointer active:scale-95 ${notif.unread ? 'border-primary/30 bg-primary/5' : 'border-white/5'
+              style={{ backgroundColor: 'var(--bg-surface)', borderColor: notif.unread ? 'var(--primary)' : 'var(--card-border)' }}
+              className={`relative rounded-[1.5rem] p-4 flex gap-4 border transition-all cursor-pointer active:scale-95 ${notif.unread ? 'bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]' : ''
                 }`}
             >
-              <div className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center border ${notif.unread ? 'bg-primary/20 border-primary text-primary shadow-neon-glow' : 'bg-zinc-900 border-zinc-800 text-zinc-600'
-                }`}>
+              <div
+                style={{
+                  backgroundColor: notif.unread ? 'rgba(var(--primary-rgb), 0.2)' : 'var(--bg-surface-inner)',
+                  borderColor: notif.unread ? 'var(--primary)' : 'var(--card-border)',
+                  color: notif.unread ? 'var(--primary)' : 'var(--text-muted)'
+                }}
+                className={`w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center border ${notif.unread ? 'shadow-neon-glow' : ''
+                  }`}>
                 <span className="material-symbols-outlined">{notif.icon}</span>
               </div>
 
               <div className="flex-1 space-y-1">
                 <div className="flex justify-between items-start">
-                  <h3 className={`text-sm font-bold uppercase tracking-tight ${notif.unread ? 'text-white' : 'text-zinc-500'}`}>
+                  <h3 style={{ color: notif.unread ? 'var(--text-main)' : 'var(--text-muted)' }} className={`text-sm font-bold uppercase tracking-tight`}>
                     {notif.title}
                   </h3>
-                  <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-tighter whitespace-nowrap pt-0.5">
+                  <span style={{ color: 'var(--text-muted)' }} className="text-[9px] font-bold uppercase tracking-tighter whitespace-nowrap pt-0.5">
                     {notif.time}
                   </span>
                 </div>
-                <p className={`text-xs leading-relaxed ${notif.unread ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                <p style={{ color: notif.unread ? 'var(--text-muted)' : 'var(--text-muted)' }} className={`text-xs leading-relaxed opacity-80`}>
                   {notif.description}
                 </p>
               </div>
@@ -141,7 +153,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-zinc-700 space-y-4">
+          <div style={{ color: 'var(--text-muted)' }} className="flex flex-col items-center justify-center py-20 space-y-4">
             <span className="material-symbols-outlined text-6xl opacity-20">notifications_off</span>
             <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nada que reportar por ahora</p>
           </div>
@@ -150,7 +162,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack }) => {
 
       {/* Footer Info */}
       <div className="text-center pt-10">
-        <p className="text-[8px] text-zinc-800 font-bold uppercase tracking-[0.5em]">Sistema de Alertas ChefScan IA • Online</p>
+        <p style={{ color: 'var(--text-muted)', opacity: 0.5 }} className="text-[8px] font-bold uppercase tracking-[0.5em]">Sistema de Alertas ChefScan IA • Online</p>
       </div>
     </div>
   );
