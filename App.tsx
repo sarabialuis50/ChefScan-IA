@@ -47,6 +47,10 @@ const App: React.FC = () => {
 
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedChef, setSelectedChef] = useState<any>(null);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('chefscan_theme');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [lastUsedIngredients, setLastUsedIngredients] = useState<string[]>([]);
   const [lastUsedPortions, setLastUsedPortions] = useState<number>(2);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -55,6 +59,18 @@ const App: React.FC = () => {
     isOpen: false,
     reason: 'recipes'
   });
+
+  // Sync theme with Document
+  useEffect(() => {
+    localStorage.setItem('chefscan_theme', String(isDarkMode));
+    if (!isDarkMode) {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+  }, [isDarkMode]);
 
   // Listen for Auth changes
   useEffect(() => {
@@ -66,7 +82,7 @@ const App: React.FC = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session) {
+      if (event === 'SIGNED_IN' && session) {
         fetchProfile(session.user.id, session.user.email || '');
       } else if (event === 'SIGNED_OUT') {
         setState(prev => ({ ...prev, user: null, currentView: 'landing' }));
@@ -653,7 +669,7 @@ const App: React.FC = () => {
       let permanentId = recipe.id;
 
       // Ensure recipe is in the recipes table (if it's a new generation without UUID)
-      if (typeof recipe.id === 'string' && recipe.id.length < 10) {
+      if (typeof recipe.id === 'string' && recipe.id.length < 30) {
         const { data: newRecipe } = await supabase
           .from('recipes')
           .insert({
@@ -669,24 +685,25 @@ const App: React.FC = () => {
         if (newRecipe) permanentId = newRecipe.id;
       }
 
-      const { error } = await supabase
+      const { error: favError } = await supabase
         .from('favorites')
         .insert({
           user_id: state.user.id,
           recipe_id: permanentId,
-          category: category // We should ensure the DB has this column
+          category: category
         });
 
-      if (!error) {
+      if (!favError) {
         const updatedRecipe = { ...recipe, id: permanentId, category };
+
+        // Actualizamos de forma atómica para evitar que el UI pierda la referencia
+        setSelectedRecipe(updatedRecipe);
         setState(prev => ({
           ...prev,
           favoriteRecipes: [updatedRecipe, ...prev.favoriteRecipes]
         }));
-        // Actualizar receta seleccionada para que el ID coincida y el corazón se ponga rojo
-        if (selectedRecipe?.id === recipe.id) {
-          setSelectedRecipe(updatedRecipe);
-        }
+      } else {
+        console.error("Error saving favorite:", favError);
       }
     }
   };
@@ -736,6 +753,8 @@ const App: React.FC = () => {
               inventory={state.inventory}
               acceptedChallengeId={state.acceptedChallengeId}
               onBack={() => navigateTo('landing')}
+              isDarkMode={isDarkMode}
+              onThemeToggle={() => setIsDarkMode(!isDarkMode)}
             />
           </Layout>
         );
@@ -925,8 +944,8 @@ const App: React.FC = () => {
   const isFullWidthView = ['landing', 'scanner'].includes(state.currentView);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center overflow-x-hidden">
-      <div className={`w-full h-screen relative overflow-hidden flex flex-col items-center ${!isFullWidthView ? 'max-w-[430px] border-x border-white/5' : ''}`}>
+    <div style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-main)' }} className="min-h-screen flex flex-col items-center overflow-x-hidden">
+      <div style={{ borderColor: 'var(--card-border)' }} className={`w-full h-screen relative overflow-hidden flex flex-col items-center ${!isFullWidthView ? 'max-w-[430px] border-x' : ''}`}>
         {renderView()}
         {showChatbot && (
           <AIChatbot
