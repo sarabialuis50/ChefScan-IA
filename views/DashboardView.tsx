@@ -242,61 +242,80 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       <section style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="border rounded-[2.5rem] p-6 space-y-6 w-full shadow-sm">
         <h3 style={{ color: 'var(--text-main)' }} className="font-bold text-lg leading-tight mb-2">Generar Recetas</h3>
 
-        {/* Unified Preview Box */}
+        {/* Unified Preview Box - RESTORED ORIGINAL LOGIC */}
         <div
-          style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }}
-          className="w-full min-h-[16rem] border-2 border-dashed rounded-[1.5rem] relative overflow-hidden transition-all group flex flex-col items-center justify-center p-6 text-center"
+          style={{ backgroundColor: 'var(--bg-surface-inner)' }}
+          className="w-full min-h-[16rem] border-2 border-dashed border-primary/30 rounded-[1.5rem] relative overflow-hidden transition-all group flex flex-col items-center justify-center text-center"
         >
           {previewImage ? (
-            <div className="absolute inset-0">
+            <>
               <img
                 src={previewImage}
                 alt="Preview"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover absolute inset-0 opacity-60 group-hover:opacity-40 transition-opacity"
               />
-              <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
-            </div>
-          ) : null}
+              {/* Overlay Content Original */}
+              <div className="relative z-10 w-full h-full p-6 flex flex-col items-center justify-center">
+                {analyzing ? (
+                  <div className="flex flex-col items-center justify-center gap-3 bg-black/40 backdrop-blur-sm p-4 rounded-2xl">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Analizando...</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-4 w-full">
+                    <span style={{ background: 'var(--bg-surface-inner)', color: 'var(--text-main)' }} className="text-[10px] font-black uppercase tracking-widest drop-shadow-lg animate-in fade-in duration-500 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                      Captura Exitosa
+                    </span>
 
-          <div className="relative z-10 flex flex-col items-center gap-2">
-            {analyzing ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-primary text-[10px] font-black uppercase tracking-widest animate-pulse">Analizando...</span>
-              </div>
-            ) : (
-              <>
-                <div style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' }} className="w-16 h-16 rounded-full flex items-center justify-center mb-2">
-                  <span className="material-symbols-outlined text-3xl notranslate">photo_camera</span>
-                </div>
-                <h4 style={{ color: 'var(--text-main)' }} className="font-bold text-base">Vista previa de la foto</h4>
-                <p style={{ color: 'var(--text-muted)' }} className="text-[11px] font-medium max-w-[200px]">Toma una foto o selecciona de tu galería</p>
-
-                {/* Ingredients chips if scanned */}
-                {scannedIngredients && scannedIngredients.length > 0 && (
-                  <div className="flex flex-wrap justify-center gap-1.5 mt-4 max-w-full">
-                    {scannedIngredients.map((ing, i) => (
-                      <span
-                        key={i}
-                        className="bg-primary/20 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full border border-primary/30"
-                      >
-                        {ing.name}
-                      </span>
-                    ))}
+                    {/* Chips de ingredientes detectados ORIGINAL */}
+                    {scannedIngredients && scannedIngredients.length > 0 && (
+                      <div className="flex flex-wrap justify-center gap-2 max-w-full animate-in zoom-in-95 duration-500">
+                        {scannedIngredients.map((ing, i) => (
+                          <div
+                            key={i}
+                            style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.2)', borderColor: 'rgba(var(--primary-rgb), 0.4)' }}
+                            className="border backdrop-blur-md px-3 py-1.5 rounded-xl flex flex-col items-center shadow-lg"
+                          >
+                            <span style={{ color: 'var(--text-main)' }} className="text-[10px] font-black uppercase tracking-tight">{ing.name}</span>
+                            {ing.nutrients && (
+                              <span className="text-[8px] font-bold text-primary/80 uppercase tracking-tighter">
+                                {ing.nutrients.calories} kcal
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          ) : (
+            <div className="relative z-10 flex flex-col items-center gap-2">
+              {analyzing ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Analizando Red Neuronal...</span>
+                </div>
+              ) : (
+                <>
+                  <div style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' }} className="w-16 h-16 rounded-full flex items-center justify-center mb-2">
+                    <span className="material-symbols-outlined text-3xl notranslate">photo_camera</span>
+                  </div>
+                  <h4 style={{ color: 'var(--text-main)' }} className="font-bold text-base">Vista previa de la foto</h4>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-[11px] font-medium max-w-[200px]">Toma una foto o selecciona de tu galería</p>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - PILL DESIGN WITH PERMANENT SUBTLE BORDER */}
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onScanClick}
             disabled={analyzing}
-            style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)', color: 'var(--text-main)' }}
-            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border text-xs font-bold hover:border-primary hover:text-primary transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 py-2 rounded-full border border-primary/40 text-[12px] font-bold bg-[var(--bg-surface-soft)] text-[var(--text-main)] hover:bg-primary hover:text-black hover:border-primary transition-all duration-300 active:scale-95 disabled:opacity-50 shadow-sm"
           >
             <span className="material-symbols-outlined text-lg notranslate">photo_camera</span>
             Tomar foto
@@ -304,24 +323,23 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             onClick={handleUploadClick}
             disabled={analyzing}
-            style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)', color: 'var(--text-main)' }}
-            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border text-xs font-bold hover:border-primary hover:text-primary transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 py-2 rounded-full border border-primary/40 text-[12px] font-bold bg-[var(--bg-surface-soft)] text-[var(--text-main)] hover:bg-primary hover:text-black hover:border-primary transition-all duration-300 active:scale-95 disabled:opacity-50 shadow-sm"
           >
             <span className="material-symbols-outlined text-lg notranslate">image</span>
             Galería
           </button>
         </div>
 
-        {/* Manual Input */}
+        {/* Manual Input - PILL DESIGN WITH PERMANENT SUBTLE BORDER */}
         <div className="space-y-2">
-          <label style={{ color: 'var(--text-main)' }} className="text-xs font-bold block ml-1">Entrada manual</label>
+          <label style={{ color: 'var(--text-main)' }} className="text-[12px] font-bold block ml-1 uppercase tracking-tight opacity-80">Entrada manual</label>
           <input
             type="text"
             placeholder="Ej: Pollo, Arroz, Aguacate..."
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
-            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
-            className="w-full border rounded-2xl py-4 px-5 text-sm placeholder-zinc-500 focus:border-primary outline-none transition-all"
+            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)' }}
+            className="w-full border border-primary/40 rounded-full py-2.5 px-6 text-sm placeholder-zinc-500 focus:border-primary outline-none transition-all"
           />
           <p style={{ color: 'var(--text-muted)' }} className="text-[10px] font-medium ml-1">Escribe el nombre del ingrediente o usa la cámara</p>
         </div>
@@ -348,28 +366,29 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* Generate Button */}
-        <button
-          onClick={handleGenerate}
-          disabled={loading || analyzing || (!manualInput.trim() && scannedIngredients.length === 0)}
-          className="w-full bg-[#a2c1a9] hover:bg-primary text-white hover:text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-3 uppercase text-sm shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:grayscale transition-colors duration-300"
-        >
-          <span className="material-symbols-outlined notranslate">{loading ? 'sync' : 'auto_awesome'}</span>
-          {loading ? "Generando..." : "Generar recetas"}
-        </button>
-      </section>
+        {/* Generate & Reset Buttons - RESTORED ORIGINAL STYLES */}
+        <div className="space-y-3 pt-2">
+          <button
+            onClick={handleGenerate}
+            disabled={loading || analyzing || (!manualInput.trim() && scannedIngredients.length === 0)}
+            className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 uppercase text-sm active:scale-95 transition-all disabled:opacity-50
+              ${manualInput.trim() || scannedIngredients.length > 0
+                ? 'bg-primary text-black font-black shadow-[0_0_20px_rgba(57,255,20,0.4)]'
+                : 'bg-transparent border-2 border-primary/50 text-primary font-bold shadow-none'}`}
+          >
+            <span className="material-symbols-outlined notranslate">{loading ? 'sync' : 'auto_awesome'}</span>
+            {loading ? "Generando..." : "Generar recetas"}
+          </button>
 
-      {/* Restart System - Below the card */}
-      <div className="px-6">
-        <button
-          onClick={resetSystem}
-          style={{ color: 'var(--text-muted)' }}
-          className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-primary transition-all py-2"
-        >
-          <span className="material-symbols-outlined text-sm notranslate">refresh</span>
-          Reiniciar Sistema
-        </button>
-      </div>
+          <button
+            onClick={resetSystem}
+            className="w-full bg-transparent border border-primary/40 text-primary font-bold py-4 rounded-2xl flex items-center justify-center gap-2 uppercase text-[11px] active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined text-sm notranslate">refresh</span>
+            Reiniciar Sistema
+          </button>
+        </div>
+      </section>
 
       {/* Expiry Challenges Slider */}
       {(() => {
