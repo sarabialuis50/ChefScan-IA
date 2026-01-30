@@ -181,11 +181,7 @@ const App: React.FC = () => {
 
     // Try to fetch profile with a small retry mechanism/delay for new users
     try {
-      const fetchAttempt = async () => await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      const fetchAttempt = async () => await supabase.rpc('get_profile_with_reset', { target_user_id: userId }).single();
 
       let { data, error } = await fetchAttempt();
 
@@ -228,7 +224,9 @@ const App: React.FC = () => {
       allergies: profileData.allergies,
       cookingGoal: profileData.cooking_goal,
       bio: profileData.bio,
-      phone: profileData.phone
+      phone: profileData.phone,
+      recipeGenerationsToday: profileData.recipe_generations_today || 0,
+      chefCredits: profileData.chef_credits ?? (profileData.is_premium ? 999 : 10)
     } : fallbackUser;
 
     // Fetch sub-data (Favorites, History, Inventory) - Safe to be empty
@@ -275,7 +273,8 @@ const App: React.FC = () => {
       userTags: finalTags,
       // CRÍTICO: Solo redirigimos al dashboard si es la carga inicial o si explícitamente venimos de login
       currentView: isInitialLoad && (prev.currentView === 'landing' || prev.currentView === 'login') ? 'dashboard' : prev.currentView,
-      chefCredits: finalUser.isPremium ? 999 : 10
+      recipeGenerationsToday: finalUser.recipeGenerationsToday,
+      chefCredits: finalUser.chefCredits
     }));
 
     // Handle Push Notifications Subscription
@@ -540,6 +539,11 @@ const App: React.FC = () => {
       recipeGenerationsToday: prev.recipeGenerationsToday + 1
     }));
 
+    // Actualizar límite en DB
+    if (state.user?.id) {
+      await supabase.rpc('increment_recipe_generations', { user_id: state.user.id });
+    }
+
     // Persistencia en Supabase si el usuario está logueado
     if (state.user?.id) {
       try {
@@ -654,6 +658,11 @@ const App: React.FC = () => {
             ...prev.history
           ]
         }));
+
+        // Actualizar límite en DB
+        if (state.user?.id) {
+          await supabase.rpc('increment_recipe_generations', { user_id: state.user.id });
+        }
       }, 800);
     } catch (error) {
       console.error("Error generating recipes:", error);
@@ -1076,8 +1085,18 @@ const App: React.FC = () => {
             isPremium={state.user?.isPremium}
             user={state.user}
             chefCredits={state.chefCredits}
-            onUseCredit={() => setState(prev => ({ ...prev, chefCredits: Math.max(0, prev.chefCredits - 1) }))}
-            onAddCredits={() => setState(prev => ({ ...prev, chefCredits: prev.chefCredits + 3 }))}
+            onUseCredit={async () => {
+              if (state.user?.id) {
+                await supabase.rpc('decrement_chef_credits', { user_id: state.user.id });
+              }
+              setState(prev => ({ ...prev, chefCredits: Math.max(0, prev.chefCredits - 1) }));
+            }}
+            onAddCredits={async () => {
+              if (state.user?.id) {
+                await supabase.rpc('add_chef_credits', { user_id: state.user.id, amount: 3 });
+              }
+              setState(prev => ({ ...prev, chefCredits: prev.chefCredits + 3 }));
+            }}
             onShowPremium={() => setPremiumModal({ isOpen: true, reason: 'chefbot' })}
           />
         )}

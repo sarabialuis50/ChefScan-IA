@@ -313,7 +313,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </>
           ) : (
-            <div className="relative z-10 flex flex-col items-center gap-2">
+            <div className="relative z-10 flex flex-col items-center gap-1">
               {analyzing ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -321,11 +321,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               ) : (
                 <>
-                  <div style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' }} className="w-16 h-16 rounded-full flex items-center justify-center mb-2">
-                    <span className="material-symbols-outlined text-3xl notranslate">photo_camera</span>
+                  <div style={{ backgroundColor: 'rgba(57, 255, 20, 0.1)', color: '#39FF14' }} className="w-20 h-20 rounded-full flex items-center justify-center mb-4 border border-[#39FF14]/30 shadow-[0_0_20px_rgba(57,255,20,0.2)]">
+                    <span className="material-symbols-outlined text-4xl notranslate" style={{ fontWeight: '300', textShadow: '0 0 10px rgba(57, 255, 20, 0.5)' }}>photo_camera</span>
                   </div>
-                  <h4 style={{ color: 'var(--text-main)' }} className="font-bold text-base">{t('take_photo')}</h4>
-                  <p style={{ color: 'var(--text-muted)' }} className="text-[11px] font-medium max-w-[200px]">{t('gallery')}</p>
+                  <h4 style={{ color: 'var(--text-main)' }} className="font-bold text-lg mb-0 leading-tight">Vista previa de la foto</h4>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-[12px] font-medium leading-tight">Toma una foto o selecciona de tu galería</p>
                 </>
               )}
             </div>
