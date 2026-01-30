@@ -28,7 +28,14 @@ const CookingModeView: React.FC<CookingModeViewProps> = ({ recipe, onClose, lang
     const steps = recipe.instructions || [];
     const progress = ((currentStep + 1) / steps.length) * 100;
 
-    // Initialize Speech Synthesis & Recognition
+    const [showMicTip, setShowMicTip] = useState(false);
+
+    const stepRef = useRef(currentStep);
+    useEffect(() => {
+        stepRef.current = currentStep;
+    }, [currentStep]);
+
+    // Initialize Speech Recognition once
     useEffect(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
@@ -39,65 +46,77 @@ const CookingModeView: React.FC<CookingModeViewProps> = ({ recipe, onClose, lang
 
             recognitionRef.current.onresult = (event: any) => {
                 const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+                console.log("Voice Command:", command);
 
-                const nextCmds = language === 'es' ? ['siguiente', 'próximo'] : ['next', 'next step'];
-                const backCmds = language === 'es' ? ['atrás', 'anterior'] : ['back', 'previous'];
-                const repeatCmds = language === 'es' ? ['repetir', 'lee'] : ['repeat', 'read', 'listen'];
-                const exitCmds = language === 'es' ? ['salir', 'cerrar', 'parar'] : ['exit', 'close', 'stop'];
-                const helpCmds = language === 'es' ? ['ayuda', 'qué puedo decir'] : ['help', 'what can i say'];
+                const nextCmds = language === 'es' ? ['siguiente', 'próximo', 'después'] : ['next', 'advance'];
+                const backCmds = language === 'es' ? ['atrás', 'anterior', 'regresa'] : ['back', 'previous'];
+                const repeatCmds = language === 'es' ? ['repetir', 'repite', 'lee', 'otra vez'] : ['repeat', 'read again'];
+                const exitCmds = language === 'es' ? ['salir', 'cerrar', 'terminar'] : ['exit', 'close', 'quit'];
 
                 if (nextCmds.some(c => command.includes(c))) {
                     handleNext();
                 } else if (backCmds.some(c => command.includes(c))) {
                     handleBack();
                 } else if (repeatCmds.some(c => command.includes(c))) {
-                    readStep(currentStep);
+                    readStep(stepRef.current);
                 } else if (exitCmds.some(c => command.includes(c))) {
                     onClose();
-                } else if (helpCmds.some(c => command.includes(c))) {
-                    readHelp();
                 }
             };
 
-            const readHelp = () => {
-                const helpText = t('voice_commands_desc');
-                const utterance = new SpeechSynthesisUtterance(helpText);
-                utterance.lang = language === 'es' ? 'es-ES' : 'en-US';
-                window.speechSynthesis.speak(utterance);
-            };
-
             recognitionRef.current.onend = () => {
-                if (isListening) {
+                // Keep it listening if the state is still intended to be listening
+                if (isListeningRef.current) {
                     try {
                         recognitionRef.current.start();
                     } catch (e) { }
                 }
             };
+
+            recognitionRef.current.onerror = (err: any) => {
+                console.error("Speech error", err);
+                if (err.error === 'not-allowed') {
+                    setIsListening(false);
+                    isListeningRef.current = false;
+                    setShowMicTip(true); // Auto-show tip on error
+                }
+            };
         }
 
         return () => {
-            if (recognitionRef.current) recognitionRef.current.stop();
+            if (recognitionRef.current) {
+                recognitionRef.current.onend = null;
+                recognitionRef.current.stop();
+            }
             window.speechSynthesis.cancel();
         };
-    }, [isListening, currentStep]);
+    }, []);
 
+    const isListeningRef = useRef(isListening);
     const toggleListening = () => {
         if (isListening) {
             recognitionRef.current?.stop();
             setIsListening(false);
+            isListeningRef.current = false;
             window.speechSynthesis.cancel();
         } else {
             try {
                 recognitionRef.current?.start();
                 setIsListening(true);
+                isListeningRef.current = true;
                 readStep(currentStep);
+                setShowMicTip(false); // Hide tip when it successfully starts
             } catch (e) {
                 console.error("Mic error:", e);
+                // If it fails to start, maybe it's already started but glitching
+                setIsListening(true);
+                isListeningRef.current = true;
             }
         }
     };
 
     const readStep = (index: number) => {
+        if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
         const text = steps[index];
         if (!text) return;
@@ -110,21 +129,29 @@ const CookingModeView: React.FC<CookingModeViewProps> = ({ recipe, onClose, lang
     };
 
     const handleNext = () => {
-        if (currentStep < steps.length - 1) {
-            const nextIdx = currentStep + 1;
-            setCurrentStep(nextIdx);
-            if (isListening) readStep(nextIdx);
-        } else {
-            onClose();
-        }
+        // We use state here safely because this is called by the UI button or onresult handler
+        // React handles the state update normally
+        setCurrentStep(prev => {
+            if (prev < steps.length - 1) {
+                const nextIdx = prev + 1;
+                if (isListeningRef.current) readStep(nextIdx);
+                return nextIdx;
+            } else {
+                onClose();
+                return prev;
+            }
+        });
     };
 
     const handleBack = () => {
-        if (currentStep > 0) {
-            const prevIdx = currentStep - 1;
-            setCurrentStep(prevIdx);
-            if (isListening) readStep(prevIdx);
-        }
+        setCurrentStep(prev => {
+            if (prev > 0) {
+                const prevIdx = prev - 1;
+                if (isListeningRef.current) readStep(prevIdx);
+                return prevIdx;
+            }
+            return prev;
+        });
     };
 
     return (
@@ -141,19 +168,46 @@ const CookingModeView: React.FC<CookingModeViewProps> = ({ recipe, onClose, lang
                             </div>
                         )}
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={toggleListening}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-primary text-black shadow-glow' : 'text-primary border'}`}
-                            style={{ backgroundColor: isListening ? 'var(--primary)' : 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }}
-                        >
-                            <span className="material-symbols-outlined text-sm">{isListening ? 'mic' : 'mic_off'}</span>
-                        </button>
-                        <button onClick={onClose} style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="w-10 h-10 rounded-full border flex items-center justify-center text-primary">
-                            <span className="material-symbols-outlined text-sm">close</span>
-                        </button>
+                    <div className="flex flex-col items-end gap-2">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowMicTip(!showMicTip)}
+                                style={{ backgroundColor: showMicTip ? 'var(--primary)' : 'var(--bg-surface-soft)', borderColor: 'var(--card-border)', color: showMicTip ? 'black' : 'var(--primary)' }}
+                                className="w-10 h-10 rounded-full border flex items-center justify-center transition-all"
+                            >
+                                <span className="material-symbols-outlined text-sm">info</span>
+                            </button>
+                            <button
+                                onClick={toggleListening}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-primary text-black shadow-glow' : 'text-primary border'}`}
+                                style={{ backgroundColor: isListening ? 'var(--primary)' : 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }}
+                            >
+                                <span className="material-symbols-outlined text-sm">{isListening ? 'mic' : 'mic_off'}</span>
+                            </button>
+                            <button onClick={onClose} style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="w-10 h-10 rounded-full border flex items-center justify-center text-primary">
+                                <span className="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {showMicTip && (
+                    <div className="animate-in slide-in-from-top-2 duration-300">
+                        <div style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.1)', borderColor: 'var(--primary)' }} className="p-3 rounded-2xl border flex items-start gap-3 relative pr-8">
+                            <span className="material-symbols-outlined text-primary text-base">lock</span>
+                            <p style={{ color: 'var(--text-main)' }} className="text-[10px] font-bold leading-tight">
+                                {t('mic_permission_tip')}
+                            </p>
+                            <button
+                                onClick={() => setShowMicTip(false)}
+                                className="absolute top-2.5 right-2 div-center text-primary/50 hover:text-primary transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <div className="space-y-2">
                     <div className="flex justify-between items-end">
                         <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-widest">{t('step_label')} {currentStep + 1} {t('step_of')} {steps.length}</span>
@@ -185,11 +239,10 @@ const CookingModeView: React.FC<CookingModeViewProps> = ({ recipe, onClose, lang
                             {steps[currentStep]}
                         </p>
                         {isListening && (
-                            <div className="pt-4 flex justify-center gap-4">
+                            <div className="pt-4 flex flex-wrap justify-center gap-4">
                                 <span style={{ borderColor: 'rgba(57, 255, 20, 0.4)', color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase border px-3 py-1 rounded-lg">"{t('voice_help_next')}"</span>
                                 <span style={{ borderColor: 'rgba(57, 255, 20, 0.4)', color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase border px-3 py-1 rounded-lg">"{t('voice_help_back')}"</span>
                                 <span style={{ borderColor: 'rgba(57, 255, 20, 0.4)', color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase border px-3 py-1 rounded-lg">"{t('voice_help_repeat')}"</span>
-                                <span style={{ borderColor: 'rgba(57, 255, 20, 0.4)', color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase border px-3 py-1 rounded-lg">"{t('voice_help_help')}"</span>
                                 <span style={{ borderColor: 'rgba(57, 255, 20, 0.4)', color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase border px-3 py-1 rounded-lg">"{t('voice_help_exit')}"</span>
                             </div>
                         )}

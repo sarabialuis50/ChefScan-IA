@@ -244,7 +244,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
       {/* Floating Action Button - Posicionado a la derecha sobre Comunidad */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`absolute bottom-28 right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.4)] hover:scale-110 active:scale-90 transition-all z-[90] animate-float ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
+        className={`absolute bottom-40 right-4 w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(57,255,20,0.4)] hover:scale-110 active:scale-90 transition-all z-[90] animate-float ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}`}
       >
         <img src="/chefbot_final.png" alt="ChefScan AI" className="w-10 h-10 object-contain" />
         <span className="absolute -top-1 -right-1 flex h-4 w-4">

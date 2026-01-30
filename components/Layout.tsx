@@ -12,7 +12,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, showNav = true, active
   return (
     <div className="flex flex-col h-screen w-full max-w-[430px] mx-auto bg-pure-black relative overflow-hidden font-body shadow-2xl"
       style={{ backgroundColor: 'var(--bg-app)' }}>
-      <main className="flex-1 w-full overflow-y-auto pb-24 custom-scrollbar">
+      <main className={`flex-1 w-full overflow-y-auto ${showNav ? 'pb-24' : 'pb-0'} custom-scrollbar`}>
         {children}
       </main>
 

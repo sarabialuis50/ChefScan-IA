@@ -28,6 +28,7 @@ import { generateRecipes } from './services/geminiService';
 import { supabase } from './lib/supabase';
 import { InventoryItem } from './types';
 import { base64ToBlob } from './utils/imageUtils';
+import { subscribeUserToPush, requestNotificationPermission } from './utils/pushService';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -276,6 +277,18 @@ const App: React.FC = () => {
       currentView: isInitialLoad && (prev.currentView === 'landing' || prev.currentView === 'login') ? 'dashboard' : prev.currentView,
       chefCredits: finalUser.isPremium ? 999 : 10
     }));
+
+    // Handle Push Notifications Subscription
+    setTimeout(async () => {
+      try {
+        const hasPermission = await requestNotificationPermission();
+        if (hasPermission) {
+          await subscribeUserToPush(userId);
+        }
+      } catch (e) {
+        console.warn('Push registration skipped:', e);
+      }
+    }, 2000); // Small delay to ensure core UI is ready
   };
 
   const navigateTo = (view: AppView) => {
@@ -341,11 +354,27 @@ const App: React.FC = () => {
     await supabase.auth.signOut();
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!selectedRecipe?.id) return;
     const shareUrl = `http://chefscania.com/?recipeId=${selectedRecipe.id}`;
-    navigator.clipboard.writeText(shareUrl);
-    alert('¡Enlace de receta copiado al portapapeles!');
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `ChefScan.IA: ${selectedRecipe.title}`,
+          text: `¡Mira esta receta increíble que encontré en ChefScan.IA: ${selectedRecipe.title}! 🍳`,
+          url: shareUrl,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
+      }
+    } else {
+      // Fallback: Copy to clipboard
+      navigator.clipboard.writeText(shareUrl);
+      alert('¡Enlace de receta copiado al portapapeles!');
+    }
   };
 
   const handleUpdateUser = async (updates: any) => {
