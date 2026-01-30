@@ -143,15 +143,14 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
             <>
               <div className="space-y-2">
                 <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Nombre de Usuario (Máx 10)</label>
-                <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
-                  <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
+                <div style={{ backgroundColor: '#ffffff', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-zinc-500 group-focus-within:text-primary transition-colors">
                     <span className="material-symbols-outlined text-xl">person</span>
                   </span>
                   <input
                     type="text"
                     maxLength={10}
-                    className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700"
-                    style={{ color: 'var(--text-main)' }}
+                    className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-zinc-400 text-zinc-900 font-medium"
                     placeholder="Ej: Luis S."
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -162,14 +161,13 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
 
               <div className="space-y-2">
                 <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Nombre Completo</label>
-                <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
-                  <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
+                <div style={{ backgroundColor: '#ffffff', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-zinc-500 group-focus-within:text-primary transition-colors">
                     <span className="material-symbols-outlined text-xl">badge</span>
                   </span>
                   <input
                     type="text"
-                    className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700"
-                    style={{ color: 'var(--text-main)' }}
+                    className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-zinc-400 text-zinc-900 font-medium"
                     placeholder="Tu nombre completo"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
