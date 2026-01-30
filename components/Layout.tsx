@@ -22,7 +22,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, showNav = true, active
             backgroundColor: 'var(--bg-surface)',
             borderTop: '1px solid var(--card-border)'
           }}
-          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex justify-around items-center h-20 px-6 z-40 transition-colors shadow-[0_-4px_20px_rgba(0,0,0,0.5)]"
+          className="fixed bottom-1 left-1/2 -translate-x-1/2 w-full max-w-[430px] flex justify-around items-center h-20 px-6 z-40 transition-colors shadow-[0_-4px_20px_rgba(0,0,0,0.5)] rounded-2xl"
         >
           <NavItem
             active={activeNav === 'dashboard' || activeNav === 'results'}
