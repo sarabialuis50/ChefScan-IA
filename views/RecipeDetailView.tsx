@@ -12,14 +12,14 @@ interface RecipeDetailViewProps {
   onStartCooking?: () => void;
   onShare?: () => void;
   isPremium?: boolean;
+  onShowPremium?: (reason: 'recipes' | 'nutrition' | 'chefbot' | 'more-recipes') => void;
   userTags?: string[];
   onCreateTag?: (tag: string) => void;
   onUpdateTag?: (oldName: string, newName: string) => void;
   onDeleteTag?: (tag: string) => void;
 }
 
-const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite, onToggleFavorite, onBack, onNutritionClick, onStartCooking, onShare, isPremium, userTags = [], onCreateTag, onUpdateTag, onDeleteTag }) => {
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
+const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite, onToggleFavorite, onBack, onNutritionClick, onStartCooking, onShare, isPremium, onShowPremium, userTags = [], onCreateTag, onUpdateTag, onDeleteTag }) => {
   const [showTagModal, setShowTagModal] = useState(false);
 
   if (!recipe) return null;
@@ -30,7 +30,7 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
         onNutritionClick();
       }
     } else {
-      setShowPremiumModal(true);
+      if (onShowPremium) onShowPremium('nutrition');
     }
   };
 
@@ -225,28 +225,6 @@ const RecipeDetailView: React.FC<RecipeDetailViewProps> = ({ recipe, isFavorite,
         onDeleteTag={onDeleteTag}
       />
 
-      {/* Premium Modal */}
-      {showPremiumModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md" style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.9)' }}>
-          <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-sm rounded-3xl p-8 border space-y-6 text-center">
-            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center text-primary mx-auto neon-glow border border-primary/30">
-              <span className="material-symbols-outlined text-4xl">workspace_premium</span>
-            </div>
-            <div className="space-y-2">
-              <h3 style={{ color: 'var(--text-main)' }} className="text-2xl font-tech font-bold uppercase tracking-tight">Acceso Premium</h3>
-              <p style={{ color: 'var(--text-muted)' }} className="text-sm">Desbloquea informe nutricional completo, recetas ilimitadas y tu Agente Chef IA personal.</p>
-            </div>
-            <div className="grid gap-3 pt-2">
-              <button className="w-full py-4 bg-primary text-black rounded-xl font-bold uppercase text-xs tracking-widest neon-glow">
-                Subir a Premium • $19.900 IVA Incluido/mes
-              </button>
-              <button onClick={() => setShowPremiumModal(false)} className="w-full py-4 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
-                Tal vez más tarde
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

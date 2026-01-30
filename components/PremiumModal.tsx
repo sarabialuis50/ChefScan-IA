@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 interface PremiumModalProps {
     isOpen: boolean;
     onClose: () => void;
-    reason: 'recipes' | 'nutrition' | 'chefbot' | 'more-recipes' | 'community-post' | 'community-save' | 'community-comment' | 'upgrade';
+    reason: 'recipes' | 'nutrition' | 'chefbot' | 'more-recipes' | 'community-post' | 'community-save' | 'community-comment' | 'upgrade' | 'pantry-limit';
 }
 
 const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) => {
@@ -94,29 +94,31 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
     const getReasonText = () => {
         switch (reason) {
             case 'recipes':
-                return 'Has alcanzado el límite de 5 recetas favoritas para usuarios gratuitos.';
+                return 'Has alcanzado el límite de 2 consultas diarias permitidas para el plan Free. ¡Hazte Premium para realizar hasta 6 búsquedas diarias!';
             case 'nutrition':
-                return 'El análisis nutricional detallado es una función exclusiva para usuarios Premium.';
+                return 'El análisis nutricional detallado y completo es una función exclusiva para usuarios Premium.';
             case 'chefbot':
-                return 'Has agotado tus consultas gratuitas con el Agente Chef IA.';
+                return 'Has agotado tus 10 créditos diarios con el Agente Chef IA. ¡Los usuarios Premium tienen consultas ilimitadas!';
             case 'more-recipes':
-                return 'Los usuarios Free ven 3 recetas. ¡Premium ve hasta 15 por consulta!';
+                return 'Los usuarios Free solo pueden ver 3 recetas. ¡Con Premium obtienes 5 inicialmente y puedes extenderlas hasta 15 por cada búsqueda!';
             case 'community-post':
                 return 'Publicar tus creaciones en la comunidad es una función exclusiva para usuarios Premium.';
             case 'community-save':
-                return 'Guardar recetas de otros chefs es una función exclusiva para usuarios Premium.';
+                return 'Guardar recetas de otros chefs en tus favoritos es una función exclusiva para usuarios Premium.';
             case 'community-comment':
-                return 'Has alcanzado el límite de 5 comentarios mensuales para usuarios gratuitos.';
+                return 'Has alcanzado el límite de comentarios mensuales para usuarios gratuitos.';
+            case 'pantry-limit':
+                return 'Has alcanzado el límite de 5 ítems en tu despensa. ¡Hazte Premium para gestionar hasta 30 ingredientes y evitar el desperdicio!';
             case 'upgrade':
-                return '¡Da el siguiente paso en tu experiencia culinaria!';
+                return '¡Da el siguiente paso en tu experiencia culinaria profesional con ChefScan Premium!';
             default:
                 return 'Desbloquea todo el potencial culinario con ChefScan Premium.';
         }
     };
 
     return (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-md" style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.9)' }}>
-            <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-sm rounded-[2.5rem] p-8 border space-y-6 text-center shadow-[0_0_50px_rgba(57,255,20,0.1)] relative">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-xl animate-in fade-in duration-300" style={{ backgroundColor: 'rgba(var(--bg-app-rgb), 0.95)' }}>
+            <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-sm rounded-[2.5rem] p-8 border space-y-6 text-center shadow-[0_0_50px_rgba(57,255,20,0.1)] relative max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <button
                     onClick={onClose}
                     className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"
@@ -131,11 +133,15 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
                 <div className="space-y-3">
                     <h3 style={{ color: 'var(--text-main)' }} className="text-2xl font-outfit font-bold uppercase tracking-tight">Acceso Premium</h3>
                     <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed">
-                        {getReasonText()} Hazte Premium para disfrutar de una experiencia sin límites.
+                        {getReasonText()}
                     </p>
                 </div>
 
                 <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="border rounded-2xl p-4 text-left space-y-2">
+                    <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                        <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
+                        Hasta 15 recetas por consulta (vs 3 Free)
+                    </div>
                     <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
                         6 Consultas Diarias (vs 2 Free)

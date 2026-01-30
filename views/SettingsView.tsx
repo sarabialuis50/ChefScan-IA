@@ -57,10 +57,12 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 
     // Profile Edit State
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editUsername, setEditUsername] = useState(user?.username || '');
     const [editName, setEditName] = useState(user?.name || '');
     const [editEmail, setEditEmail] = useState(user?.email || '');
     const [editPhone, setEditPhone] = useState(user?.phone || '');
     const [editBio, setEditBio] = useState(user?.bio || '');
+    const [phoneError, setPhoneError] = useState('');
 
     const [tempAllergies, setTempAllergies] = useState(user?.allergies?.join(', ') || '');
     const [uploading, setUploading] = useState(false);
@@ -68,17 +70,37 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 
     useEffect(() => {
         if (isEditingProfile) {
+            setEditUsername(user?.username || '');
             setEditName(user?.name || '');
             setEditEmail(user?.email || '');
             setEditPhone(user?.phone || '');
             setEditBio(user?.bio || '');
+            setPhoneError('');
+
+            // Suggest username if empty
+            if (!user?.username && user?.name) {
+                const parts = user.name.trim().split(' ');
+                if (parts.length >= 2) {
+                    setEditUsername(`${parts[0]} ${parts[1][0]}`.slice(0, 10));
+                } else if (parts.length === 1) {
+                    setEditUsername(parts[0].slice(0, 10));
+                }
+            }
         }
     }, [isEditingProfile, user]);
 
     const handleSaveProfile = () => {
+        // Validation for Colombian Phone
+        const cleanPhone = editPhone.replace('+57', '').trim().replace(/\D/g, '');
+        if (cleanPhone.length !== 10) {
+            setPhoneError('El teléfono debe tener exactamente 10 dígitos.');
+            return;
+        }
+
         onUpdateUser({
+            username: editUsername,
             name: editName,
-            phone: editPhone,
+            phone: editPhone.startsWith('+57') ? editPhone : `+57 ${editPhone}`,
             bio: editBio
         });
         setIsEditingProfile(false);
@@ -519,6 +541,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
+                                    <label className="text-zinc-500 text-[9px] font-black uppercase tracking-widest block ml-1">Usuario (Máx 10)</label>
+                                    <input
+                                        type="text"
+                                        value={editUsername}
+                                        onChange={(e) => setEditUsername(e.target.value.slice(0, 10))}
+                                        maxLength={10}
+                                        style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+                                        className="w-full border rounded-2xl py-4 px-4 text-xs focus:border-primary/40 outline-none transition-all"
+                                        placeholder="Ej: Luis S."
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
                                     <label className="text-zinc-500 text-[9px] font-black uppercase tracking-widest block ml-1">Nombre Completo</label>
                                     <input
                                         type="text"
@@ -542,15 +577,24 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-zinc-500 text-[9px] font-black uppercase tracking-widest block ml-1">Teléfono</label>
-                                    <input
-                                        type="tel"
-                                        value={editPhone}
-                                        onChange={(e) => setEditPhone(e.target.value)}
-                                        style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
-                                        className="w-full border rounded-2xl py-4 px-4 text-xs focus:border-primary/40 outline-none transition-all"
-                                        placeholder="+52 000 000 0000"
-                                    />
+                                    <label className="text-zinc-500 text-[9px] font-black uppercase tracking-widest block ml-1">Teléfono (Colombia)</label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">+57</div>
+                                        <input
+                                            type="tel"
+                                            value={editPhone.replace('+57', '').trim()}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                setEditPhone(`+57 ${val}`);
+                                                if (phoneError) setPhoneError('');
+                                            }}
+                                            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: phoneError ? 'var(--error)' : 'var(--card-border)' }}
+                                            className="w-full border rounded-2xl py-4 pl-12 pr-4 text-xs focus:border-primary/40 outline-none transition-all"
+                                            placeholder="300 000 0000"
+                                        />
+                                    </div>
+                                    <p className="text-[8px] text-zinc-500 font-medium uppercase tracking-widest ml-1">Ingresa exactamente 10 dígitos</p>
+                                    {phoneError && <p className="text-[9px] text-red-500 font-bold uppercase tracking-tight ml-1">{phoneError}</p>}
                                 </div>
 
                                 <div className="space-y-2">

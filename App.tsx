@@ -60,6 +60,14 @@ const App: React.FC = () => {
     reason: 'recipes'
   });
 
+  // Track sub-views for each main tab
+  const [lastTabViews, setLastTabViews] = useState<Record<string, AppView>>({
+    dashboard: 'dashboard',
+    favorites: 'favorites',
+    inventory: 'inventory',
+    community: 'community'
+  });
+
   // Sync theme with Document
   useEffect(() => {
     localStorage.setItem('chefscan_theme', String(isDarkMode));
@@ -111,6 +119,7 @@ const App: React.FC = () => {
           previousView: parsed.previousView || null
         }));
         if (parsed.selectedRecipe) setSelectedRecipe(parsed.selectedRecipe);
+        if (parsed.lastTabViews) setLastTabViews(parsed.lastTabViews);
       } catch (e) { }
     }
   }, []);
@@ -126,10 +135,11 @@ const App: React.FC = () => {
         history: state.history,
         currentView: state.currentView,
         previousView: state.previousView,
-        selectedRecipe: selectedRecipe
+        selectedRecipe: selectedRecipe,
+        lastTabViews: lastTabViews
       }));
     }
-  }, [state.user, state.favoriteRecipes, state.recentRecipes, state.inventory, state.history, state.currentView, selectedRecipe]);
+  }, [state.user, state.favoriteRecipes, state.recentRecipes, state.inventory, state.history, state.currentView, selectedRecipe, lastTabViews]);
 
   // Deep Linking for Shared Recipes
   useEffect(() => {
@@ -189,6 +199,7 @@ const App: React.FC = () => {
     const fallbackUser = {
       id: userId,
       name: email.split('@')[0],
+      username: email.split('@')[0].slice(0, 10),
       email: email,
       isPremium: false,
       avatarUrl: null,
@@ -200,6 +211,10 @@ const App: React.FC = () => {
     const finalUser = profileData ? {
       id: userId,
       name: profileData.name || email.split('@')[0],
+      username: profileData.username || (profileData.name ? (() => {
+        const parts = profileData.name.trim().split(' ');
+        return parts.length >= 2 ? `${parts[0]} ${parts[1][0]}` : parts[0];
+      })().slice(0, 10) : email.split('@')[0].slice(0, 10)),
       email: email,
       isPremium: profileData.is_premium,
       avatarUrl: profileData.avatar_url,
@@ -260,18 +275,20 @@ const App: React.FC = () => {
   const navigateTo = (view: AppView) => {
     setState(prev => {
       // Vistas de detalle que no deben sobrescribir el origen principal
-      const secondaryViews = ['recipe-detail', 'nutritional-detail', 'cooking-mode'];
+      const secondaryViews: AppView[] = ['recipe-detail', 'nutritional-detail', 'cooking-mode'];
       const isSecondary = secondaryViews.includes(view);
       const wasSecondary = secondaryViews.includes(prev.currentView);
 
-      let nextPreviousView = prev.previousView;
+      const nextPreviousView = !wasSecondary ? prev.currentView : prev.previousView;
 
-      // Si pasamos de una vista principal a cualquier otra, guardamos el origen
-      if (!wasSecondary) {
-        nextPreviousView = prev.currentView;
-      }
-      // Si estamos en una vista secundaria y nos movemos a otra secundaria, 
-      // mantenemos el previousView original (el que nos llevó a la primera secundaria)
+      // Update last active view for the corresponding tab
+      const dashboardViews: AppView[] = ['dashboard', 'results', 'notifications', 'challenges', 'history', 'settings', 'profile'];
+      const communityViews: AppView[] = ['community', 'explore', 'profile-detail'];
+
+      if (dashboardViews.includes(view)) setLastTabViews(v => ({ ...v, dashboard: view }));
+      else if (view === 'favorites') setLastTabViews(v => ({ ...v, favorites: 'favorites' }));
+      else if (view === 'inventory') setLastTabViews(v => ({ ...v, inventory: 'inventory' }));
+      else if (communityViews.includes(view)) setLastTabViews(v => ({ ...v, community: view }));
 
       return {
         ...prev,
@@ -279,6 +296,16 @@ const App: React.FC = () => {
         currentView: view
       };
     });
+  };
+
+  const handleNavClick = (view: AppView) => {
+    // If clicking a root tab view, resolve to its last active sub-view
+    const rootViews: AppView[] = ['dashboard', 'favorites', 'inventory', 'community'];
+    if (rootViews.includes(view)) {
+      navigateTo(lastTabViews[view]);
+    } else {
+      navigateTo(view);
+    }
   };
 
   const handleLogin = (user: any) => {
@@ -307,6 +334,7 @@ const App: React.FC = () => {
     // Persist to Supabase
     const dbUpdates: any = {};
     if (updates.name) dbUpdates.name = updates.name;
+    if (updates.username) dbUpdates.username = updates.username;
     if (updates.allergies) dbUpdates.allergies = updates.allergies;
     if (updates.cookingGoal) dbUpdates.cooking_goal = updates.cookingGoal;
     if (updates.avatarUrl) dbUpdates.avatar_url = updates.avatarUrl;
@@ -401,7 +429,7 @@ const App: React.FC = () => {
     // Check Inventory Limits
     const limit = state.user?.isPremium ? 30 : 5;
     if (state.inventory.length >= limit) {
-      setPremiumModal({ isOpen: true, reason: 'more-recipes' });
+      setPremiumModal({ isOpen: true, reason: 'pantry-limit' });
       return;
     }
     const { data, error } = await supabase
@@ -748,7 +776,7 @@ const App: React.FC = () => {
         );
       case 'dashboard':
         return (
-          <Layout activeNav="dashboard" onNavClick={navigateTo}>
+          <Layout activeNav="dashboard" onNavClick={handleNavClick}>
             <DashboardView
               user={state.user}
               recentRecipes={state.recentRecipes}
@@ -764,7 +792,7 @@ const App: React.FC = () => {
               onExploreClick={() => navigateTo('explore')}
               onNotificationsClick={() => navigateTo('notifications')}
               onSettingsClick={() => navigateTo('settings')}
-              onNavClick={navigateTo}
+              onNavClick={handleNavClick}
               onComplete={handleScanComplete}
               onAddItem={handleInventoryAdd}
               inventory={state.inventory}
@@ -781,7 +809,7 @@ const App: React.FC = () => {
         );
       case 'community':
         return (
-          <Layout activeNav="community" onNavClick={navigateTo}>
+          <Layout activeNav="community" onNavClick={handleNavClick}>
             <CommunityView
               user={state.user}
               onBack={() => navigateTo('dashboard')}
@@ -795,7 +823,7 @@ const App: React.FC = () => {
         );
       case 'profile-detail':
         return (
-          <Layout activeNav="community" onNavClick={navigateTo}>
+          <Layout activeNav="community" onNavClick={handleNavClick}>
             <ProfileDetailView
               chef={selectedChef || { name: 'Chef Invitado', level: 1, recipesCount: 0, likesCount: 0, specialty: 'Cocinero Casual' }}
               onBack={() => navigateTo('community')}
@@ -804,13 +832,13 @@ const App: React.FC = () => {
         );
       case 'notifications':
         return (
-          <Layout activeNav="dashboard" onNavClick={navigateTo}>
+          <Layout activeNav="dashboard" onNavClick={handleNavClick}>
             <NotificationsView onBack={() => navigateTo('dashboard')} />
           </Layout>
         );
       case 'challenges':
         return (
-          <Layout activeNav="dashboard" onNavClick={navigateTo}>
+          <Layout activeNav="dashboard" onNavClick={handleNavClick}>
             <ChallengesView
               inventory={state.inventory}
               onBack={() => navigateTo('dashboard')}
@@ -821,7 +849,7 @@ const App: React.FC = () => {
         );
       case 'inventory':
         return (
-          <Layout activeNav="inventory" onNavClick={navigateTo}>
+          <Layout activeNav="inventory" onNavClick={handleNavClick}>
             <InventoryView
               inventory={state.inventory}
               onAddItem={handleInventoryAdd}
@@ -835,7 +863,7 @@ const App: React.FC = () => {
         );
       case 'settings':
         return (
-          <Layout activeNav="dashboard" onNavClick={navigateTo}>
+          <Layout activeNav="dashboard" onNavClick={handleNavClick}>
             <SettingsView
               onBack={() => navigateTo('dashboard')}
               user={state.user}
@@ -855,7 +883,7 @@ const App: React.FC = () => {
         );
       case 'explore':
         return (
-          <Layout activeNav="dashboard" onNavClick={navigateTo}>
+          <Layout activeNav="community" onNavClick={handleNavClick}>
             <ExploreView
               onBack={() => navigateTo('dashboard')}
               onRecipeClick={handleSelectRecipe}
@@ -874,7 +902,7 @@ const App: React.FC = () => {
         );
       case 'results':
         return (
-          <Layout activeNav="dashboard" onNavClick={navigateTo}>
+          <Layout activeNav="dashboard" onNavClick={handleNavClick}>
             <ResultsView
               recipes={state.recentRecipes}
               onRecipeClick={handleSelectRecipe}
@@ -903,6 +931,7 @@ const App: React.FC = () => {
               onStartCooking={() => navigateTo('cooking-mode')}
               onShare={handleShare}
               isPremium={state.user?.isPremium}
+              onShowPremium={(reason) => setPremiumModal({ isOpen: true, reason })}
               userTags={state.userTags}
               onCreateTag={handleCreateTag}
               onUpdateTag={handleUpdateTag}
@@ -930,7 +959,7 @@ const App: React.FC = () => {
         );
       case 'favorites':
         return (
-          <Layout activeNav="favorites" onNavClick={navigateTo}>
+          <Layout activeNav="favorites" onNavClick={handleNavClick}>
             <FavoritesView
               recipes={state.favoriteRecipes}
               userTags={state.userTags}
@@ -941,7 +970,7 @@ const App: React.FC = () => {
         );
       case 'history':
         return (
-          <Layout activeNav="history" onNavClick={navigateTo}>
+          <Layout activeNav="history" onNavClick={handleNavClick}>
             <HistoryView
               history={state.history}
               onBack={() => navigateTo('dashboard')}
@@ -951,7 +980,7 @@ const App: React.FC = () => {
         );
       case 'profile':
         return (
-          <Layout activeNav="profile" onNavClick={navigateTo}>
+          <Layout activeNav="profile" onNavClick={handleNavClick}>
             <ProfileView user={state.user} onLogout={handleLogout} />
           </Layout>
         );

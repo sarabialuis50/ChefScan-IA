@@ -193,8 +193,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="flex flex-col">
             <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-widest leading-none mb-1">Bienvenido</span>
-            <h2 style={{ color: 'var(--text-main)' }} className="font-bold text-lg leading-none">Chef <span className="text-primary">{user?.name || 'Alejandro'}</span></h2>
-            <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-widest leading-none mt-1.5">¿Qué vas a cocinar hoy?</span>
+            <h2 style={{ color: 'var(--text-main)' }} className="font-bold text-lg leading-none">Chef <span className="text-primary">{user?.username || user?.name || 'Alejandro'}</span></h2>
+            <span style={{ color: 'var(--text-muted)' }} className="text-[8.5px] font-bold uppercase tracking-tight leading-none mt-1.5 whitespace-nowrap">¿Qué vas a cocinar hoy?</span>
           </div>
         </div>
 

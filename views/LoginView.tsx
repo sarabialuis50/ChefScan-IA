@@ -12,6 +12,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const translateError = (message: string) => {
@@ -52,8 +54,30 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
       return;
     }
 
+    if (isSignUp) {
+      if (!username || !fullName) {
+        setError('Por favor completa todos los campos.');
+        setLoading(false);
+        return;
+      }
+      if (username.length > 10) {
+        setError('El usuario no puede tener más de 10 caracteres.');
+        setLoading(false);
+        return;
+      }
+    }
+
     const { data, error: authError } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
+      ? await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username,
+            name: fullName
+          }
+        }
+      })
       : await supabase.auth.signInWithPassword({ email, password });
 
     if (authError) {
@@ -115,6 +139,47 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {isSignUp && (
+            <>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Nombre de Usuario (Máx 10)</label>
+                <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
+                    <span className="material-symbols-outlined text-xl">person</span>
+                  </span>
+                  <input
+                    type="text"
+                    maxLength={10}
+                    className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700"
+                    style={{ color: 'var(--text-main)' }}
+                    placeholder="Ej: Luis S."
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Nombre Completo</label>
+                <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary transition-all overflow-hidden">
+                  <span className="absolute inset-y-0 left-4 flex items-center text-gray-500 group-focus-within:text-primary transition-colors">
+                    <span className="material-symbols-outlined text-xl">badge</span>
+                  </span>
+                  <input
+                    type="text"
+                    className="block w-full pl-12 pr-4 py-4 bg-transparent border-none focus:ring-0 text-sm placeholder-gray-700"
+                    style={{ color: 'var(--text-main)' }}
+                    placeholder="Tu nombre completo"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <div className="space-y-2">
             <label className="block text-[10px] font-bold text-primary uppercase tracking-widest ml-1">Email de Acceso</label>
             <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="relative group rounded-xl border focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/30 transition-all overflow-hidden">

@@ -87,6 +87,7 @@
     :root {
       --primary: #39FF14;
       --bg-app: #000000;
+      --bg-app-rgb: 0, 0, 0;
       --bg-surface: #1e1e1e;
       --bg-surface-soft: #2a2a2a;
       --bg-surface-inner: #0f0f0f;
@@ -100,6 +101,7 @@
     .light {
       --primary: #39FF14;
       --bg-app: #f8fafc;
+      --bg-app-rgb: 248, 250, 252;
       --bg-surface: #ffffff;
       --bg-surface-soft: #f1f5f9;
       --bg-surface-inner: #f8fafc;
@@ -137,6 +139,34 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
+    }
+
+    /* Ocultar iconos nativos de fecha para un diseño limpio */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      background: transparent;
+      bottom: 0;
+      color: transparent;
+      cursor: pointer;
+      height: auto;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: auto;
+    }
+
+    input[type="date"]::-webkit-inner-spin-button,
+    input[type="date"]::-webkit-clear-button {
+      display: none;
+      -webkit-appearance: none;
+    }
+
+    /* Hacer que las flechas nativas de inputs numéricos sean blancas en modo oscuro */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      filter: invert(1) brightness(2);
+      opacity: 1;
+      cursor: pointer;
     }
 
     .scanner-line {

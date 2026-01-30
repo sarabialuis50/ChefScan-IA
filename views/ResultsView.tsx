@@ -20,7 +20,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({
   loadingMore
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   const filteredRecipes = useMemo(() => {
     if (!searchTerm.trim()) return recipes;
@@ -31,9 +30,7 @@ const ResultsView: React.FC<ResultsViewProps> = ({
   }, [recipes, searchTerm]);
 
   const handleGenerateMore = () => {
-    if (!isPremium) {
-      setShowPremiumModal(true);
-    } else if (onGenerateMore) {
+    if (onGenerateMore) {
       onGenerateMore();
     }
   };
@@ -162,44 +159,6 @@ const ResultsView: React.FC<ResultsViewProps> = ({
         )}
       </div>
 
-      {/* Premium Modal */}
-      {showPremiumModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center p-6" style={{ backgroundColor: 'var(--bg-app)', opacity: 0.95, backdropFilter: 'blur(10px)' }}>
-          <div style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="w-full max-w-sm rounded-[2.5rem] p-8 border space-y-6 text-center shadow-[0_0_50px_rgba(57,255,20,0.1)]">
-            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center text-primary mx-auto neon-glow border border-primary/30">
-              <span className="material-symbols-outlined text-4xl">workspace_premium</span>
-            </div>
-            <div className="space-y-3">
-              <h3 style={{ color: 'var(--text-main)' }} className="text-2xl font-tech font-bold uppercase tracking-tight">Acceso Premium</h3>
-              <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed">
-                Hazte Premium para ver hasta <span className="text-primary font-bold">15 versiones</span> de recetas (en lotes de 5), informe nutricional detallado y acceso ilimitado a tu Agente Chef IA.
-              </p>
-            </div>
-            <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="border rounded-2xl p-4 text-left space-y-2">
-              <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
-                Ver hasta 10 versiones más
-              </div>
-              <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
-                Informe nutricional completo
-              </div>
-              <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
-                Agente Chef IA Personal
-              </div>
-            </div>
-            <div className="grid gap-3 pt-2">
-              <button className="w-full py-4 bg-primary text-black rounded-xl font-bold uppercase text-xs tracking-widest neon-glow shadow-strong">
-                Subir a Premium • $19.900 IVA Incluido/mes
-              </button>
-              <button onClick={() => setShowPremiumModal(false)} className="w-full py-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
-                Tal vez más tarde
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

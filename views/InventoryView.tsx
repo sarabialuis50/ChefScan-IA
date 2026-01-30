@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { InventoryItem } from '../types';
 import { getDaysDiff, formatLocalDate } from '../utils/dateUtils';
 
@@ -24,7 +24,33 @@ const InventoryView: React.FC<InventoryViewProps> = ({
 }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [newItem, setNewItem] = useState({ name: '', quantity: 1, unit: 'unidades', expiryDate: '' });
+    const [expiryDisplay, setExpiryDisplay] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const dateInputRef = useRef<HTMLInputElement>(null);
+
+    const handleDateChange = (v: string) => {
+        let cleaned = v.replace(/\D/g, '');
+        if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+
+        let formatted = cleaned;
+        if (cleaned.length > 2) {
+            formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+        }
+        if (cleaned.length > 4) {
+            formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4) + '/' + cleaned.slice(4);
+        }
+
+        setExpiryDisplay(formatted);
+
+        if (cleaned.length === 8) {
+            const d = cleaned.slice(0, 2);
+            const m = cleaned.slice(2, 4);
+            const y = cleaned.slice(4);
+            setNewItem(prev => ({ ...prev, expiryDate: `${y}-${m}-${d}` }));
+        } else {
+            setNewItem(prev => ({ ...prev, expiryDate: '' }));
+        }
+    };
 
     const filteredInventory = useMemo(() => {
         return inventory.filter(item =>
@@ -49,6 +75,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({
         if (newItem.name) {
             onAddItem(newItem.name, newItem.quantity, newItem.unit, newItem.expiryDate || undefined);
             setNewItem({ name: '', quantity: 1, unit: 'unidades', expiryDate: '' });
+            setExpiryDisplay('');
             setIsAdding(false);
         }
     };
@@ -200,7 +227,11 @@ const InventoryView: React.FC<InventoryViewProps> = ({
                         className="w-full max-w-sm max-h-[90vh] rounded-3xl p-8 border flex flex-col relative overflow-hidden shadow-2xl animate-in zoom-in duration-300">
                         <div className="flex justify-between items-center mb-6 flex-shrink-0">
                             <h3 style={{ color: 'var(--text-main)' }} className="text-xl font-black uppercase tracking-tighter">NUEVO ITEM</h3>
-                            <button type="button" onClick={() => setIsAdding(false)} className="text-zinc-500 hover:text-white">
+                            <button type="button" onClick={() => {
+                                setIsAdding(false);
+                                setNewItem({ name: '', quantity: 1, unit: 'unidades', expiryDate: '' });
+                                setExpiryDisplay('');
+                            }} className="text-zinc-500 hover:text-white">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
@@ -215,7 +246,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({
                                         type="text"
                                         value={newItem.name}
                                         onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                                        style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+                                        style={{ backgroundColor: 'var(--bg-surface-inner)', color: '#ffffff', borderColor: 'var(--card-border)' }}
                                         className="w-full border p-4 rounded-2xl text-sm focus:border-primary outline-none"
                                         placeholder="Ej: Leche desnatada"
                                     />
@@ -228,8 +259,8 @@ const InventoryView: React.FC<InventoryViewProps> = ({
                                             type="number"
                                             value={newItem.quantity}
                                             onChange={e => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
-                                            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
-                                            className="w-full border p-4 rounded-2xl text-sm focus:border-primary outline-none"
+                                            style={{ backgroundColor: 'var(--bg-surface-inner)', color: '#ffffff', borderColor: 'var(--card-border)' }}
+                                            className="w-full border p-4 rounded-2xl text-sm focus:border-primary outline-none quantity-input-dark"
                                         />
                                     </div>
                                     <div className="space-y-1">
@@ -237,7 +268,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({
                                         <select
                                             value={newItem.unit}
                                             onChange={e => setNewItem({ ...newItem, unit: e.target.value })}
-                                            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+                                            style={{ backgroundColor: 'var(--bg-surface-inner)', color: '#ffffff', borderColor: 'var(--card-border)' }}
                                             className="w-full border p-4 rounded-2xl text-sm focus:border-primary outline-none"
                                         >
                                             <option value="unidades">uds (unidades)</option>
@@ -252,15 +283,43 @@ const InventoryView: React.FC<InventoryViewProps> = ({
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-[10px] text-zinc-500 font-bold uppercase ml-1">Caducidad (Opcional)</label>
-                                    <input
-                                        type="date"
-                                        min={new Date().toISOString().split('T')[0]}
-                                        value={newItem.expiryDate}
-                                        onChange={e => setNewItem({ ...newItem, expiryDate: e.target.value })}
-                                        style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
-                                        className="w-full border p-4 rounded-2xl text-sm focus:border-primary outline-none"
-                                    />
+                                    <label className="text-[10px] text-zinc-500 font-bold uppercase ml-1">Fecha de Caducidad</label>
+                                    <div className="relative">
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="DD / MM / AAAA"
+                                            value={expiryDisplay}
+                                            onChange={e => handleDateChange(e.target.value)}
+                                            style={{
+                                                backgroundColor: 'var(--bg-surface-inner)',
+                                                color: '#ffffff',
+                                                borderColor: 'var(--card-border)'
+                                            }}
+                                            className="w-full border p-4 rounded-2xl text-sm focus:border-primary outline-none"
+                                        />
+                                        <div
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-zinc-500 hover:text-primary transition-colors flex items-center"
+                                            onClick={() => dateInputRef.current?.showPicker()}
+                                        >
+                                            <span className="material-symbols-outlined text-xl">calendar_today</span>
+                                        </div>
+                                        <input
+                                            type="date"
+                                            ref={dateInputRef}
+                                            min={new Date().toISOString().split('T')[0]}
+                                            className="absolute opacity-0 pointer-events-none"
+                                            style={{ width: 0, height: 0, top: '50%', right: '1rem' }}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                if (val) {
+                                                    const [y, m, d] = val.split('-');
+                                                    setExpiryDisplay(`${d}/${m}/${y}`);
+                                                    setNewItem(prev => ({ ...prev, expiryDate: val }));
+                                                }
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
