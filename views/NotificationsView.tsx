@@ -90,13 +90,13 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language,
     }
 
     let descriptionParts: string[] = [];
-    if (expiredCount > 0) descriptionParts.push(`${expiredCount} vencido(s)`);
-    if (expiringTodayCount > 0) descriptionParts.push(`${expiringTodayCount} vencen hoy`);
-    if (expiringTomorrowCount > 0) descriptionParts.push(`${expiringTomorrowCount} vencen mañana`);
+    if (expiredCount > 0) descriptionParts.push(`${expiredCount} items vencido(s)`);
+    if (expiringTodayCount > 0) descriptionParts.push(`${expiringTodayCount} items que vencen hoy`);
+    if (expiringTomorrowCount > 0) descriptionParts.push(`${expiringTomorrowCount} items que vencen mañana`);
 
     // Si no hay nada urgente pero si avisos próximos
     if (descriptionParts.length === 0 && proxExpiryCount > 0) {
-      descriptionParts.push(`${proxExpiryCount} próximos a vencer`);
+      descriptionParts.push(`${proxExpiryCount} items próximos a vencer`);
     }
 
     const description = `Tienes ${descriptionParts.join(', ')} en tu despensa.`;
@@ -106,7 +106,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language,
       id: 'pantry_summary',
       title: 'Alertas Despensa',
       description: description,
-      time: 'Resumen Diario',
+      time: 'Hace un momento',
       icon: 'inventory_2',
       type: 'pantry',
       unread: isUrgent
