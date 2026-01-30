@@ -240,162 +240,136 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       <section style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="border rounded-[2.5rem] p-6 space-y-6 w-full shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-2xl notranslate">photo_camera</span>
-          <h3 style={{ color: 'var(--text-main)' }} className="font-bold uppercase tracking-[0.2em] text-[10px] opacity-80">Imagen de ingredientes</h3>
-        </div>
+        <h3 style={{ color: 'var(--text-main)' }} className="font-bold text-lg leading-tight mb-2">Generar Recetas</h3>
 
-        {/* Preview Box - Image Preview + Results */}
-        <div style={{ backgroundColor: 'var(--bg-surface-inner)' }} className="w-full min-h-[18rem] border-2 border-dashed border-primary/30 rounded-[1.5rem] relative overflow-hidden transition-all group">
+        {/* Unified Preview Box */}
+        <div
+          style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }}
+          className="w-full min-h-[16rem] border-2 border-dashed rounded-[1.5rem] relative overflow-hidden transition-all group flex flex-col items-center justify-center p-6 text-center"
+        >
           {previewImage ? (
-            <>
+            <div className="absolute inset-0">
               <img
                 src={previewImage}
-                alt="Uploaded Ingredients"
-                className="w-full h-full object-cover absolute inset-0 opacity-60 group-hover:opacity-40 transition-opacity"
+                alt="Preview"
+                className="w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
+            </div>
+          ) : null}
 
-              {/* Overlay Content */}
-              <div className="relative z-10 w-full h-full p-6 flex flex-col items-center justify-center">
-                {analyzing ? (
-                  <div className="flex flex-col items-center justify-center gap-3 bg-black/40 backdrop-blur-sm p-4 rounded-2xl">
-                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Analizando...</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-4 w-full">
-                    <span style={{ background: 'var(--bg-surface-inner)', color: 'var(--text-main)' }} className="text-[10px] font-black uppercase tracking-widest drop-shadow-lg animate-in fade-in duration-500 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
-                      Captura Exitosa
-                    </span>
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            {analyzing ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-primary text-[10px] font-black uppercase tracking-widest animate-pulse">Analizando...</span>
+              </div>
+            ) : (
+              <>
+                <div style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.1)', color: 'var(--primary)' }} className="w-16 h-16 rounded-full flex items-center justify-center mb-2">
+                  <span className="material-symbols-outlined text-3xl notranslate">photo_camera</span>
+                </div>
+                <h4 style={{ color: 'var(--text-main)' }} className="font-bold text-base">Vista previa de la foto</h4>
+                <p style={{ color: 'var(--text-muted)' }} className="text-[11px] font-medium max-w-[200px]">Toma una foto o selecciona de tu galería</p>
 
-                    {/* Chips de ingredientes detectados */}
-                    {scannedIngredients && scannedIngredients.length > 0 && (
-                      <div className="flex flex-wrap justify-center gap-2 max-w-full animate-in zoom-in-95 duration-500">
-                        {scannedIngredients.map((ing, i) => (
-                          <div
-                            key={i}
-                            style={{ backgroundColor: 'rgba(var(--primary-rgb), 0.2)', borderColor: 'rgba(var(--primary-rgb), 0.4)' }}
-                            className="border backdrop-blur-md px-3 py-1.5 rounded-xl flex flex-col items-center shadow-lg"
-                          >
-                            <span style={{ color: 'var(--text-main)' }} className="text-[10px] font-black uppercase tracking-tight">{ing.name}</span>
-                            {ing.nutrients && (
-                              <span className="text-[8px] font-bold text-primary/80 uppercase tracking-tighter">
-                                {ing.nutrients.calories} kcal
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {scannedIngredients && scannedIngredients.length === 0 && (
-                      <span className="text-red-400 text-[9px] font-black uppercase tracking-widest bg-black/40 px-3 py-1 rounded-full">
-                        No se detectaron ingredientes
+                {/* Ingredients chips if scanned */}
+                {scannedIngredients && scannedIngredients.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-1.5 mt-4 max-w-full">
+                    {scannedIngredients.map((ing, i) => (
+                      <span
+                        key={i}
+                        className="bg-primary/20 text-primary text-[9px] font-bold px-2 py-0.5 rounded-full border border-primary/30"
+                      >
+                        {ing.name}
                       </span>
-                    )}
+                    ))}
                   </div>
                 )}
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center min-h-[18rem] w-full gap-5 text-center">
-              {analyzing ? (
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Analizando Red Neuronal...</span>
-                </div>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-primary text-5xl opacity-80 neon-text-glow">frame_inspect</span>
-                  <span className="text-primary text-[11px] font-black uppercase tracking-[0.3em] opacity-90">ESPERANDO ENTRADA VISUAL...</span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Unified Button - Now full width and primary style */}
-        <button
-          onClick={handleUploadClick}
-          disabled={analyzing}
-          className="w-full bg-primary text-black font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(57,255,20,0.4)] uppercase text-sm active:scale-95 transition-all disabled:opacity-50"
-        >
-          <span className="material-symbols-outlined font-black text-xl">{analyzing ? 'sync' : 'upload'}</span>
-          {analyzing ? 'Analizando...' : 'Subir Foto'}
-        </button>
-
-        <p className="text-zinc-600 text-[9px] font-bold uppercase tracking-[0.15em] text-center pt-1">
-          Escaneo inteligente de red neuronal activado.
-        </p>
-      </section>
-
-      {/* Suggested Recipes Section */}
-      <section style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--card-border)' }} className="border rounded-[2.5rem] p-6 space-y-6 w-full shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary text-2xl notranslate">auto_awesome</span>
-          <h3 style={{ color: 'var(--text-main)' }} className="font-bold uppercase tracking-[0.2em] text-[10px] opacity-80">Recetas sugeridas</h3>
-        </div>
-
-        <div className="space-y-5">
-          <div className="space-y-2">
-            <label style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-widest block ml-1">
-              Entrada manual: <span className="text-[9px] font-medium normal-case opacity-60">(verifica la ortografía)</span>
-            </label>
-            <div className="relative group">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-primary opacity-60">edit_note</span>
-              <input
-                type="text"
-                placeholder="Ej: pollo, arroz, aguacate"
-                value={manualInput}
-                onChange={(e) => setManualInput(e.target.value)}
-                style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
-                className="w-full border rounded-2xl py-5 pl-12 pr-4 text-sm placeholder-zinc-500 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
-              />
-            </div>
-            {aiSuggestion && (
-              <div className="mt-2 p-3 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <span className="material-symbols-outlined text-primary text-sm animate-pulse">auto_awesome</span>
-                <p className="text-[10px] text-primary/80 font-bold italic tracking-tight">{aiSuggestion}</p>
-              </div>
+              </>
             )}
           </div>
+        </div>
 
-          <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="border rounded-2xl p-4 flex items-center justify-between shadow-sm">
-            <span style={{ color: 'var(--text-main)' }} className="font-black text-xs uppercase tracking-widest">Porciones:</span>
-            <div style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)' }} className="flex items-center gap-6 rounded-xl px-4 py-1.5 border">
-              <button onClick={() => setPortions(Math.max(1, portions - 1))} className="text-zinc-500 hover:text-primary transition-colors">
-                <span className="material-symbols-outlined text-xl">remove</span>
-              </button>
-              <span className="text-primary font-black text-xl w-4 text-center">{portions}</span>
-              <button onClick={() => setPortions(portions + 1)} className="text-zinc-500 hover:text-primary transition-colors">
-                <span className="material-symbols-outlined text-xl">add</span>
-              </button>
-            </div>
-          </div>
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={onScanClick}
+            disabled={analyzing}
+            style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)', color: 'var(--text-main)' }}
+            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border text-xs font-bold hover:border-primary hover:text-primary transition-all active:scale-95 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-lg notranslate">photo_camera</span>
+            Tomar foto
+          </button>
+          <button
+            onClick={handleUploadClick}
+            disabled={analyzing}
+            style={{ backgroundColor: 'var(--bg-surface-soft)', borderColor: 'var(--card-border)', color: 'var(--text-main)' }}
+            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border text-xs font-bold hover:border-primary hover:text-primary transition-all active:scale-95 disabled:opacity-50"
+          >
+            <span className="material-symbols-outlined text-lg notranslate">image</span>
+            Galería
+          </button>
+        </div>
 
-          <div className="space-y-3 pt-2">
+        {/* Manual Input */}
+        <div className="space-y-2">
+          <label style={{ color: 'var(--text-main)' }} className="text-xs font-bold block ml-1">Entrada manual</label>
+          <input
+            type="text"
+            placeholder="Ej: Pollo, Arroz, Aguacate..."
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            style={{ backgroundColor: 'var(--bg-surface-inner)', color: 'var(--text-main)', borderColor: 'var(--card-border)' }}
+            className="w-full border rounded-2xl py-4 px-5 text-sm placeholder-zinc-500 focus:border-primary outline-none transition-all"
+          />
+          <p style={{ color: 'var(--text-muted)' }} className="text-[10px] font-medium ml-1">Escribe el nombre del ingrediente o usa la cámara</p>
+        </div>
+
+        {/* Portions Selector */}
+        <div className="space-y-3">
+          <label style={{ color: 'var(--text-main)' }} className="text-xs font-bold block ml-1">Número de porciones</label>
+          <div className="flex items-center gap-6">
             <button
-              onClick={handleGenerate}
-              disabled={loading || analyzing || (!manualInput.trim())}
-              className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 uppercase text-sm active:scale-95 transition-all disabled:opacity-50
-                ${manualInput.trim()
-                  ? 'bg-primary text-black font-black shadow-[0_0_20px_rgba(57,255,20,0.4)]'
-                  : 'bg-transparent border-2 border-primary/50 text-primary font-bold shadow-none'}`}
+              onClick={() => setPortions(Math.max(1, portions - 1))}
+              style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}
+              className="w-10 h-10 rounded-xl border flex items-center justify-center hover:border-primary hover:text-primary transition-all active:scale-90"
             >
-              <span className="material-symbols-outlined font-bold">{loading ? 'sync' : 'skillet'}</span>
-              {loading ? "Generando..." : "Generar Recetas"}
+              <span className="material-symbols-outlined notranslate">remove</span>
             </button>
-
+            <span style={{ color: 'var(--text-main)' }} className="font-black text-xl w-6 text-center">{portions}</span>
             <button
-              onClick={resetSystem}
-              className="w-full bg-transparent border border-primary/40 text-primary font-bold py-4 rounded-2xl flex items-center justify-center gap-2 uppercase text-[11px] active:scale-95 transition-all"
+              onClick={() => setPortions(portions + 1)}
+              style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)', color: 'var(--text-muted)' }}
+              className="w-10 h-10 rounded-xl border flex items-center justify-center hover:border-primary hover:text-primary transition-all active:scale-90"
             >
-              <span className="material-symbols-outlined text-sm">refresh</span>
-              Reiniciar Sistema
+              <span className="material-symbols-outlined notranslate">add</span>
             </button>
           </div>
         </div>
+
+        {/* Generate Button */}
+        <button
+          onClick={handleGenerate}
+          disabled={loading || analyzing || (!manualInput.trim() && scannedIngredients.length === 0)}
+          className="w-full bg-[#a2c1a9] hover:bg-primary text-white hover:text-black font-bold py-4 rounded-2xl flex items-center justify-center gap-3 uppercase text-sm shadow-lg active:scale-95 transition-all disabled:opacity-50 disabled:grayscale transition-colors duration-300"
+        >
+          <span className="material-symbols-outlined notranslate">{loading ? 'sync' : 'auto_awesome'}</span>
+          {loading ? "Generando..." : "Generar recetas"}
+        </button>
       </section>
+
+      {/* Restart System - Below the card */}
+      <div className="px-6">
+        <button
+          onClick={resetSystem}
+          style={{ color: 'var(--text-muted)' }}
+          className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-primary transition-all py-2"
+        >
+          <span className="material-symbols-outlined text-sm notranslate">refresh</span>
+          Reiniciar Sistema
+        </button>
+      </div>
 
       {/* Expiry Challenges Slider */}
       {(() => {
