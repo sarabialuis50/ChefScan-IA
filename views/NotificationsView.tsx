@@ -8,6 +8,7 @@ interface NotificationsViewProps {
   onBack: () => void;
   language: Language;
   inventory?: InventoryItem[];
+  onGenerateRecipe?: (ingredients: string[]) => void;
 }
 
 interface Notification {
@@ -18,30 +19,25 @@ interface Notification {
   icon: string;
   type: 'recipe' | 'system' | 'alert' | 'pantry';
   unread: boolean;
+  actionLabel?: string;
+  actionPayload?: any;
 }
 
-const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language, inventory }) => {
+const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language, inventory, onGenerateRecipe }) => {
   const t = useTranslation(language);
   const [activeFilter, setActiveFilter] = useState('Todas');
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     const baseNotifications: Notification[] = [
       {
         id: '1',
-        title: '¡Nueva Receta Gourmet!',
-        description: 'IA ha generado una variante premium de tu Salmón Parrillero.',
+        title: 'Recomendación Inteligente',
+        description: 'IA ha generado una recomendación de recetas basada en items de tu despensa.',
         time: 'Hace 5 min',
         icon: 'auto_awesome',
         type: 'recipe',
-        unread: true
-      },
-      {
-        id: '2',
-        title: 'Escaneo Completado',
-        description: 'Se han identificado 4 nuevos ingredientes en tu refrigerador.',
-        time: 'Hace 2 horas',
-        icon: 'camera',
-        type: 'system',
-        unread: true
+        unread: true,
+        actionLabel: 'Ver Receta',
+        actionPayload: ['Salmón', 'Espárragos', 'Limón', 'Ajo'] // Example ingredients hidden from user view
       },
       {
         id: '3',
@@ -207,6 +203,20 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language,
                 </div>
                 <p style={{ color: notif.unread ? 'var(--text-muted)' : 'var(--text-muted)' }} className={`text-xs leading-relaxed opacity-80`}>
                   {notif.description}
+
+                  {/* Action Button Inline */}
+                  {notif.actionLabel && onGenerateRecipe && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onGenerateRecipe(notif.actionPayload);
+                      }}
+                      className="ml-1 text-[8px] font-black uppercase tracking-widest text-primary hover:underline cursor-pointer align-baseline whitespace-nowrap"
+                    >
+                      {notif.actionLabel}
+                      <span className="material-symbols-outlined text-[9px] font-bold align-text-bottom ml-0.5">arrow_forward</span>
+                    </span>
+                  )}
                 </p>
               </div>
 

@@ -928,7 +928,12 @@ const App: React.FC = () => {
       case 'notifications':
         return (
           <Layout activeNav="dashboard" onNavClick={handleNavClick}>
-            <NotificationsView onBack={() => navigateTo('dashboard')} language={state.language} inventory={state.inventory} />
+            <NotificationsView
+              onBack={() => navigateTo('dashboard')}
+              language={state.language}
+              inventory={state.inventory}
+              onGenerateRecipe={(ingredients) => handleStartGeneration(ingredients, 2)}
+            />
           </Layout>
         );
       case 'challenges':

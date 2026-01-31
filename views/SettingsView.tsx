@@ -122,17 +122,25 @@ const SettingsView: React.FC<SettingsViewProps> = ({
     }, [isEditingProfile, user]);
 
     const handleSaveProfile = () => {
-        // Validation for Colombian Phone
+        // Validation for Colombian Phone (Optional)
         const cleanPhone = editPhone.replace('+57', '').trim().replace(/\D/g, '');
-        if (cleanPhone.length !== 10) {
+
+        // Only validate if user entered a number
+        if (cleanPhone.length > 0 && cleanPhone.length !== 10) {
             setPhoneError('El teléfono debe tener exactamente 10 dígitos.');
             return;
+        }
+
+        // Determine correct phone format to save
+        let finalPhone = '';
+        if (cleanPhone.length > 0) {
+            finalPhone = editPhone.startsWith('+57') ? editPhone : `+57 ${editPhone}`;
         }
 
         onUpdateUser({
             username: editUsername,
             name: editName,
-            phone: editPhone.startsWith('+57') ? editPhone : `+57 ${editPhone}`,
+            phone: finalPhone,
             bio: editBio
         });
         setIsEditingProfile(false);
@@ -693,7 +701,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-zinc-500 text-[9px] font-black uppercase tracking-widest block ml-1">Teléfono (Colombia)</label>
+                                    <label className="text-zinc-500 text-[9px] font-black uppercase tracking-widest block ml-1">Teléfono (Colombia) (Opcional)</label>
                                     <div className="relative">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-xs font-bold">+57</div>
                                         <input
@@ -709,7 +717,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({
                                             placeholder="300 000 0000"
                                         />
                                     </div>
-                                    <p className="text-[8px] text-zinc-500 font-medium uppercase tracking-widest ml-1">Ingresa exactamente 10 dígitos</p>
+                                    <p className="text-[8px] text-zinc-500 font-medium uppercase tracking-widest ml-1">Ingresa 10 dígitos o déjalo vacío</p>
                                     {phoneError && <p className="text-[9px] text-red-500 font-bold uppercase tracking-tight ml-1">{phoneError}</p>}
                                 </div>
 
