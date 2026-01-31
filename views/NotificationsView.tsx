@@ -9,7 +9,10 @@ interface NotificationsViewProps {
   language: Language;
   inventory?: InventoryItem[];
   onGenerateRecipe?: (ingredients: string[]) => void;
+  isUpdateAvailable?: boolean;
+  onUpdateAction?: () => void;
 }
+
 
 interface Notification {
   id: string;
@@ -23,7 +26,15 @@ interface Notification {
   actionPayload?: any;
 }
 
-const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language, inventory, onGenerateRecipe }) => {
+const NotificationsView: React.FC<NotificationsViewProps> = ({
+  onBack,
+  language,
+  inventory,
+  onGenerateRecipe,
+  isUpdateAvailable,
+  onUpdateAction
+}) => {
+
   const t = useTranslation(language);
   const [activeFilter, setActiveFilter] = useState('Todas');
   const [notifications, setNotifications] = useState<Notification[]>(() => {
@@ -41,13 +52,18 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language,
       },
       {
         id: '3',
-        title: 'Actualización del Núcleo',
-        description: 'ChefScan Engine v2.5 ya está activo con mayor precisión visual.',
-        time: 'Ayer',
-        icon: 'developer_board',
+        title: isUpdateAvailable ? 'Nueva Versión Disponible' : 'Actualización del Núcleo',
+        description: isUpdateAvailable
+          ? 'Hay una nueva actualización de ChefScan.IA lista para mejorar tu experiencia.'
+          : 'ChefScan Engine v2.5 ya está activo con mayor precisión visual.',
+        time: isUpdateAvailable ? 'AHORA' : 'Ayer',
+        icon: isUpdateAvailable ? 'system_update' : 'developer_board',
         type: 'system',
-        unread: false
+        unread: isUpdateAvailable ? true : false,
+        actionLabel: isUpdateAvailable ? 'Actualizar' : undefined,
+        actionPayload: 'pwa-update'
       },
+
       {
         id: '4',
         title: 'Consejo Saludable',
@@ -205,17 +221,26 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language,
                   {notif.description}
 
                   {/* Action Button Inline */}
-                  {notif.actionLabel && onGenerateRecipe && (
-                    <span
+                  {notif.actionLabel && (onGenerateRecipe || (notif.actionPayload === 'pwa-update' && onUpdateAction)) && (
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onGenerateRecipe(notif.actionPayload);
+                        if (notif.actionPayload === 'pwa-update' && onUpdateAction) {
+                          onUpdateAction();
+                        } else if (onGenerateRecipe) {
+                          onGenerateRecipe(notif.actionPayload);
+                        }
                       }}
-                      className="ml-1 text-[8px] font-black uppercase tracking-widest text-primary hover:underline cursor-pointer align-baseline whitespace-nowrap"
+                      className={`mt-2 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 hover:underline decoration-2 underline-offset-4 transition-all ${notif.actionPayload === 'pwa-update'
+                          ? "text-[#39FF14] decoration-[#39FF14]"
+                          : "text-primary decoration-primary"
+                        }`}
                     >
                       {notif.actionLabel}
-                      <span className="material-symbols-outlined text-[9px] font-bold align-text-bottom ml-0.5">arrow_forward</span>
-                    </span>
+                      <span className="material-symbols-outlined text-sm">
+                        {notif.actionPayload === 'pwa-update' ? 'refresh' : 'arrow_forward'}
+                      </span>
+                    </button>
                   )}
                 </p>
               </div>

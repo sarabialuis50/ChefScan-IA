@@ -6,6 +6,13 @@ import { precacheAndRoute } from 'workbox-precaching';
 // @ts-ignore
 precacheAndRoute(self.__WB_MANIFEST);
 
+// Handle SKIP_WAITING for immediate activation
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
 self.addEventListener('push', (event) => {
     const data = event.data ? event.data.json() : { title: 'ChefScan.IA', body: '¡Tienes una nueva actualización!' };
 

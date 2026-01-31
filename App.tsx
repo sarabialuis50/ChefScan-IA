@@ -29,6 +29,8 @@ import { supabase } from './lib/supabase';
 import { InventoryItem } from './types';
 import { base64ToBlob } from './utils/imageUtils';
 import { subscribeUserToPush, requestNotificationPermission } from './utils/pushService';
+import { registerSW } from 'virtual:pwa-register';
+
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -73,6 +75,11 @@ const App: React.FC = () => {
     community: 'community'
   });
 
+  // PWA Update State
+  const [needRefresh, setNeedRefresh] = useState(false);
+  const updateServiceWorkerRef = useRef<((reloadPage?: boolean) => Promise<void>) | null>(null);
+
+
   // Sync theme with Document
   useEffect(() => {
     localStorage.setItem('chefscan_theme', String(isDarkMode));
@@ -113,6 +120,31 @@ const App: React.FC = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Service Worker Registration & Update Detection
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      const updateSW = registerSW({
+        onNeedRefresh() {
+          setNeedRefresh(true);
+          updateServiceWorkerRef.current = updateSW;
+        },
+        onOfflineReady() {
+          console.log('App ready to work offline');
+        },
+      });
+    }
+  }, []);
+
+  const handleUpdatePWA = () => {
+    if (updateServiceWorkerRef.current) {
+      updateServiceWorkerRef.current(true);
+      setNeedRefresh(false);
+    } else {
+      window.location.reload();
+    }
+  };
+
 
   // Persistence: Load from LocalStorage
   useEffect(() => {
@@ -968,7 +1000,10 @@ const App: React.FC = () => {
               language={state.language}
               inventory={state.inventory}
               onGenerateRecipe={(ingredients) => handleStartGeneration(ingredients, 2)}
+              isUpdateAvailable={needRefresh}
+              onUpdateAction={handleUpdatePWA}
             />
+
           </Layout>
         );
       case 'challenges':
@@ -1183,6 +1218,28 @@ const App: React.FC = () => {
           reason={premiumModal.reason}
         />
       </div>
+      {/* PWA Update Banner */}
+      {needRefresh && (
+        <div className="fixed top-20 left-4 right-4 z-[200] animate-in slide-in-from-top duration-500">
+          <div className="bg-zinc-900/90 backdrop-blur-md border border-[#39FF14]/30 rounded-2xl p-4 shadow-[0_0_30px_rgba(57,255,20,0.15)] flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#39FF14]/20 flex items-center justify-center text-[#39FF14]">
+                <span className="material-symbols-outlined">system_update</span>
+              </div>
+              <div>
+                <h4 className="text-white text-xs font-bold uppercase tracking-tight">Nueva versión disponible</h4>
+                <p className="text-zinc-400 text-[10px]">Actualiza para disfrutar las mejoras.</p>
+              </div>
+            </div>
+            <button
+              onClick={handleUpdatePWA}
+              className="bg-[#39FF14] text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-neon-glow hover:scale-105 active:scale-95 transition-all"
+            >
+              Actualizar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
