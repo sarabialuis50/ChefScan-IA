@@ -131,6 +131,20 @@ const App: React.FC = () => {
       }
 
       if (session) {
+        // CRITICAL: Clear localStorage if the saved user doesn't match the session user
+        try {
+          const savedState = localStorage.getItem('chefscan_state');
+          if (savedState) {
+            const parsed = JSON.parse(savedState);
+            if (parsed.user?.id && parsed.user.id !== session.user.id) {
+              console.log('User mismatch detected, clearing localStorage...');
+              localStorage.removeItem('chefscan_state');
+            }
+          }
+        } catch (e) {
+          console.warn('Error checking localStorage user', e);
+        }
+
         fetchProfile(session.user.id, session.user.email || '', true);
       }
     });
@@ -138,9 +152,25 @@ const App: React.FC = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        // CRITICAL: Clear localStorage if the new user doesn't match the old saved user
+        try {
+          const savedState = localStorage.getItem('chefscan_state');
+          if (savedState) {
+            const parsed = JSON.parse(savedState);
+            if (parsed.user?.id && parsed.user.id !== session.user.id) {
+              console.log('SIGNED_IN: User mismatch, clearing localStorage...');
+              localStorage.removeItem('chefscan_state');
+            }
+          }
+        } catch (e) { }
+
         fetchProfile(session.user.id, session.user.email || '');
       } else if (event === 'SIGNED_OUT') {
-        setState(prev => ({ ...prev, user: null, currentView: 'landing' }));
+        // Clear all user-specific data on logout
+        try {
+          localStorage.removeItem('chefscan_state');
+        } catch (e) { }
+        setState(prev => ({ ...prev, user: null, currentView: 'landing', chefCredits: 10, recipeGenerationsToday: 0, favoriteRecipes: [], recentRecipes: [], inventory: [], history: [], userTags: [] }));
       } else if (event === 'PASSWORD_RECOVERY') {
         navigateTo('reset-password');
       }
@@ -148,6 +178,7 @@ const App: React.FC = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
 
   // Service Worker Registration & Update Detection (Manual for Maximum Compatibility)
   useEffect(() => {
