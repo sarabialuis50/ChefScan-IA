@@ -96,10 +96,13 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
   }, [user?.name]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isWatchingAd, setIsWatchingAd] = useState(false);
 
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const currentSpeakingIndexRef = useRef<number | null>(null);
+
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -120,14 +123,42 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
     }
   }, [isOpen]);
 
+  // Pause audio without resetting position (HTML5 Audio only, Speech Synthesis doesn't support reliable pause)
+  const pauseAudio = () => {
+    if (currentAudio) {
+      currentAudio.pause();
+      setIsPaused(true);
+    } else if (window.speechSynthesis && window.speechSynthesis.speaking) {
+      // Speech Synthesis pause is unreliable, just stop it
+      window.speechSynthesis.cancel();
+      setIsSpeaking(null);
+      setIsPaused(false);
+    }
+  };
+
+  // Resume audio from current position (HTML5 Audio only)
+  const resumeAudio = () => {
+    if (currentAudio && isPaused) {
+      currentAudio.play().catch(console.error);
+      setIsPaused(false);
+    }
+  };
+
+  // Fully stop and reset audio
   const stopAudio = () => {
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
     }
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     setIsSpeaking(null);
+    setIsPaused(false);
+    currentSpeakingIndexRef.current = null;
   };
+
 
   const handleSend = async () => {
     if (chefCredits <= 0 && !isPremium) {
@@ -217,16 +248,25 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
   };
 
   const handlePlayAudio = async (text: string, index: number) => {
-    // If clicking the same message that is currently playing, stop it.
+    // If clicking the same message that is currently playing/paused
     if (isSpeaking === index) {
-      stopAudio();
-      return;
+      if (isPaused) {
+        // Resume from where we left off
+        resumeAudio();
+        return;
+      } else {
+        // Currently playing, so pause it
+        pauseAudio();
+        return;
+      }
     }
 
     // Stop any existing playback before starting new one
     stopAudio();
 
+    currentSpeakingIndexRef.current = index;
     setIsSpeaking(index);
+
     try {
       const base64Audio = await generateSpeech(text);
 
@@ -422,11 +462,12 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
                     {msg.role === 'model' && (
                       <button
                         onClick={() => handlePlayAudio(msg.text, i)}
-                        className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-lg border-2 border-black transition-all hover:scale-110 active:scale-90 ${isSpeaking === i ? 'animate-pulse' : ''}`}
+                        className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center shadow-lg border-2 border-black transition-all hover:scale-110 active:scale-90 ${isSpeaking === i && !isPaused ? 'animate-pulse' : ''}`}
                       >
                         <span className="material-symbols-outlined text-sm font-black">
-                          {isSpeaking === i ? 'pause' : 'play_arrow'}
+                          {isSpeaking === i && !isPaused ? 'pause' : 'play_arrow'}
                         </span>
+
                       </button>
                     )}
                   </div>

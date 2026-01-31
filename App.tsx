@@ -1087,7 +1087,9 @@ const App: React.FC = () => {
               onGenerateRecipe={(ingredients) => handleStartGeneration(ingredients, 2)}
               isUpdateAvailable={needRefresh}
               onUpdateAction={handleUpdatePWA}
+              userId={state.user?.id}
             />
+
 
           </Layout>
         );
