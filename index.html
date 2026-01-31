@@ -215,8 +215,36 @@
 </head>
 
 <body class="antialiased">
-  <div id="root"></div>
+  <div id="root">
+    <!-- Loading Fallback (replaced by React on mount) -->
+    <div id="app-loader"
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; color: #39FF14; font-family: 'Outfit', sans-serif;">
+      <div
+        style="width: 60px; height: 60px; border: 3px solid #39FF14; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;">
+      </div>
+      <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">Cargando ChefScan.IA...</p>
+      <style>
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      </style>
+    </div>
+  </div>
+  <script>
+    // Global Error Handler for debugging mobile issues
+    window.onerror = function (msg, url, line, col, error) {
+      var loader = document.getElementById('app-loader');
+      if (loader) {
+        loader.innerHTML = '<div style="text-align: center; padding: 40px;"><h2 style="color: #ff4444; margin-bottom: 20px;">Error al cargar</h2><p style="color: #888; font-size: 12px; max-width: 300px; word-break: break-all;">' + msg + '</p><button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #39FF14; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Reintentar</button></div>';
+      }
+      console.error('Global Error:', msg, url, line);
+      return false;
+    };
+  </script>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 
 </html>
