@@ -231,8 +231,13 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
       const base64Audio = await generateSpeech(text);
 
       if (!base64Audio) {
-        alert("El agente no pudo generar el audio en este momento. Intenta de nuevo.");
-        setIsSpeaking(null);
+        // FALLBACK: If Gemini native audio fails, use browser's Speech Synthesis
+        console.warn("Gemini audio failed, falling back to Web Speech API");
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.onend = () => setIsSpeaking(null);
+        utterance.onerror = () => setIsSpeaking(null);
+        window.speechSynthesis.speak(utterance);
         return;
       }
 
