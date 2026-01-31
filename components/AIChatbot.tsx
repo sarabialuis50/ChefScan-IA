@@ -199,21 +199,26 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
       const base64Audio = await generateSpeech(text);
       if (base64Audio) {
         if (!audioContextRef.current) {
-          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+          // Initialize AudioContext
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          audioContextRef.current = new AudioContextClass();
         }
 
-        const audioBuffer = await decodeAudioData(
-          decodeBase64(base64Audio),
-          audioContextRef.current,
-          24000,
-          1
-        );
+        // Resume context if suspended (browser autoplay policy)
+        if (audioContextRef.current.state === 'suspended') {
+          await audioContextRef.current.resume();
+        }
+
+        // Convert Base64 to ArrayBuffer
+        const audioBytes = decodeBase64(base64Audio);
+
+        // Decode audio data using native browser API (handles WAV, MP3, etc.)
+        const audioBuffer = await audioContextRef.current.decodeAudioData(audioBytes.buffer);
 
         const source = audioContextRef.current.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(audioContextRef.current.destination);
         source.onended = () => {
-          // Only reset isSpeaking if this source is the current one
           if (audioSourceRef.current === source) {
             setIsSpeaking(null);
             audioSourceRef.current = null;
@@ -222,6 +227,7 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
         audioSourceRef.current = source;
         source.start();
       } else {
+        console.warn("No audio data received from Gemini.");
         setIsSpeaking(null);
       }
     } catch (error) {
