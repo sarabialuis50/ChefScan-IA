@@ -29,7 +29,7 @@ import { supabase } from './lib/supabase';
 import { InventoryItem } from './types';
 import { base64ToBlob } from './utils/imageUtils';
 import { subscribeUserToPush, requestNotificationPermission } from './utils/pushService';
-import { registerSW } from 'virtual:pwa-register';
+
 
 
 const App: React.FC = () => {
@@ -121,20 +121,34 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Service Worker Registration & Update Detection
+  // Service Worker Registration & Update Detection (Manual for Maximum Compatibility)
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      const updateSW = registerSW({
-        onNeedRefresh() {
-          setNeedRefresh(true);
-          updateServiceWorkerRef.current = updateSW;
-        },
-        onOfflineReady() {
-          console.log('App ready to work offline');
-        },
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New update available
+                setNeedRefresh(true);
+                updateServiceWorkerRef.current = async (reload = true) => {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  if (reload) {
+                    registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                };
+              }
+            });
+          }
+        });
+      }).catch(err => {
+        console.warn('SW registration failed:', err);
       });
     }
   }, []);
+
 
   const handleUpdatePWA = () => {
     if (updateServiceWorkerRef.current) {
