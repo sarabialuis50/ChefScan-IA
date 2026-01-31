@@ -239,7 +239,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onBack }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-primary text-black rounded-xl font-black uppercase tracking-[0.25em] text-[11px] shadow-neon-glow hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 border-none cursor-pointer"
+            className="w-full py-4 bg-white text-black rounded-xl font-black uppercase tracking-[0.25em] text-[11px] shadow-lg hover:bg-gray-100 active:scale-[0.98] transition-all disabled:opacity-50 border-none cursor-pointer"
           >
             {loading ? 'Procesando...' : (isSignUp ? 'Crear Cuenta' : 'Iniciar Sesión')}
           </button>
