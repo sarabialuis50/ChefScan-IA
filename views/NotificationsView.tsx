@@ -100,7 +100,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({ onBack, language,
     }
 
     const description = `Tienes ${descriptionParts.join(', ')} en tu despensa.`;
-    const isUrgent = expiredCount > 0 || expiringTodayCount > 0;
+    const isUrgent = expiredCount > 0 || expiringTodayCount > 0 || expiringTomorrowCount > 0;
 
     const pantrySummaryNotification: Notification = {
       id: 'pantry_summary',
