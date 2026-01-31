@@ -198,8 +198,31 @@ const App: React.FC = () => {
       }
 
       profileData = data;
+      profileData = data;
     } catch (e) {
-      console.warn("Profile fetch failed, using fallback");
+      console.warn("Profile fetch (RPC) failed:", e);
+      // Fallback: Try direct select
+      const { data: directData } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (directData) {
+        profileData = directData;
+      } else {
+        // Fallback: Lazy Create Profile if missing (Self-healing)
+        console.warn("Profile missing, attempting lazy creation...");
+        const { data: newProfile, error: createError } = await supabase.from('profiles').insert({
+          id: userId,
+          username: email.split('@')[0].slice(0, 10),
+          email: email,
+          name: email.split('@')[0],
+          chef_credits: 10,
+          created_at: new Date().toISOString()
+        }).select().single();
+
+        if (newProfile && !createError) {
+          profileData = newProfile;
+        } else {
+          console.error("Failed to lazy create profile:", createError);
+        }
+      }
     }
 
     // Prepare default/fallback data if profile still missing
