@@ -229,48 +229,55 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
     setIsSpeaking(index);
     try {
       const base64Audio = await generateSpeech(text);
-      if (base64Audio) {
-        // Convert base64 to byte array
-        const audioBytes = decodeBase64(base64Audio);
 
-        // Try creating a Blob from the bytes directly (assuming it's a WAV/MP3 container)
-        // If Gemini sends raw PCM (which lacks a header), this blob won't play.
-        // So we speculatively try to "fix" it if it's raw PCM by adding a WAV header.
-
-        let blob: Blob;
-
-        // Heuristic: Check for "RIFF" header at start to see if it's already WAV
-        const isWav = String.fromCharCode(audioBytes[0], audioBytes[1], audioBytes[2], audioBytes[3]) === 'RIFF';
-
-        if (isWav) {
-          blob = new Blob([audioBytes], { type: 'audio/wav' });
-        } else {
-          // Assume Raw PCM if no RIFF header, wrap it
-          const wavBytes = pcmToWav(audioBytes, 24000, 1);
-          blob = new Blob([wavBytes as any], { type: 'audio/wav' });
-        }
-
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-
-        audio.onended = () => {
-          setIsSpeaking(null);
-          setCurrentAudio(null);
-          URL.revokeObjectURL(audioUrl); // Clean up
-        };
-
-        audio.onerror = (e) => {
-          console.error("Audio playback failed", e);
-          setIsSpeaking(null);
-          setCurrentAudio(null);
-        };
-
-        setCurrentAudio(audio);
-        await audio.play();
-      } else {
-        console.warn("No audio data received from Gemini.");
+      if (!base64Audio) {
+        alert("El agente no pudo generar el audio en este momento. Intenta de nuevo.");
         setIsSpeaking(null);
+        return;
       }
+
+      // Convert base64 to byte array
+      const audioBytes = decodeBase64(base64Audio);
+
+      // detect format by signatures
+      const isWav = audioBytes[0] === 0x52 && audioBytes[1] === 0x49 && audioBytes[2] === 0x46 && audioBytes[3] === 0x46; // RIFF
+      const isMp3 = (audioBytes[0] === 0x49 && audioBytes[1] === 0x44 && audioBytes[2] === 0x33) || (audioBytes[0] === 0xFF && (audioBytes[1] & 0xE0) === 0xE0); // ID3 or Sync
+      const isAac = audioBytes[0] === 0xFF && (audioBytes[1] & 0xF6) === 0xF0; // ADTS
+      const isOgg = audioBytes[0] === 0x4F && audioBytes[1] === 0x67 && audioBytes[2] === 0x67 && audioBytes[3] === 0x53; // OggS
+
+      let blob: Blob;
+      if (isWav || isMp3 || isAac || isOgg) {
+        const type = isWav ? 'audio/wav' : (isMp3 ? 'audio/mpeg' : (isAac ? 'audio/aac' : 'audio/ogg'));
+        blob = new Blob([audioBytes as any], { type });
+      } else {
+        // Assume Raw PCM (Gemini 2.0 default is often 24kHz Mono 16bit)
+        const wavBytes = pcmToWav(audioBytes, 24000, 1);
+        blob = new Blob([wavBytes.buffer as any], { type: 'audio/wav' });
+      }
+
+      const audioUrl = URL.createObjectURL(blob);
+      const audio = new Audio(audioUrl);
+
+      audio.onended = () => {
+        setIsSpeaking(null);
+        setCurrentAudio(null);
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      audio.onerror = (e) => {
+        console.error("Audio playback failed", e);
+        setIsSpeaking(null);
+        setCurrentAudio(null);
+        alert("Error al reproducir el audio. Puede que el formato no sea soportado por tu navegador.");
+      };
+
+      setCurrentAudio(audio);
+      await audio.play().catch(err => {
+        console.error("Auto-play blocked or failed:", err);
+        setIsSpeaking(null);
+        alert("Haz clic en la pantalla para permitir la reproducción de audio.");
+      });
+
     } catch (error) {
       console.error("Audio playback error:", error);
       setIsSpeaking(null);
