@@ -164,7 +164,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
 
     const pantrySummaryNotification: Notification = {
       id: 'pantry_summary',
-      title: 'Alertas Despensa ' + (isUrgent ? '•' : ''),
+      title: 'Alertas Despensa',
       description: description,
       time: 'Hace un momento',
       icon: 'inventory_2',
