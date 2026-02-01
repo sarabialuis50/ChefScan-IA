@@ -150,13 +150,13 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
     }
 
     let descriptionParts: string[] = [];
-    if (descriptionParts.length === 0 && expiredCount > 0) descriptionParts.push(`${expiredCount} vencido(s)`);
-    if (descriptionParts.length === 0 && expiringTodayCount > 0) descriptionParts.push(`${expiringTodayCount} vencen hoy`);
-    if (descriptionParts.length === 0 && expiringTomorrowCount > 0) descriptionParts.push(`${expiringTomorrowCount} item que vence mañana`);
+    if (expiredCount > 0) descriptionParts.push(`${expiredCount} items vencido(s)`);
+    if (expiringTodayCount > 0) descriptionParts.push(`${expiringTodayCount} items que vencen hoy`);
 
-
-    if (descriptionParts.length === 0 && proxExpiryCount > 0) {
-      descriptionParts.push(`${proxExpiryCount} próximos a vencer`);
+    // Only add tomorrow/prox if we don't have expired/today parts or if you want them mixed
+    if (descriptionParts.length === 0) {
+      if (expiringTomorrowCount > 0) descriptionParts.push(`${expiringTomorrowCount} items que vencen mañana`);
+      if (proxExpiryCount > 0) descriptionParts.push(`${proxExpiryCount} próximos a vencer`);
     }
 
     const description = `Tienes ${descriptionParts.join(', ')} en tu despensa.`;
