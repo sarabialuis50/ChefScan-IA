@@ -88,7 +88,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
       {
         id: '1',
         title: 'Recomendación Inteligente',
-        description: 'IA generó recomendaciones de recetas con tu despensa.',
+        description: 'IA generó recomendaciones de recetas con ítems de tu despensa.',
         time: 'Hace 5 min',
         icon: 'auto_awesome',
         type: 'recipe',
