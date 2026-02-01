@@ -123,45 +123,57 @@ const App: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // 1. Get current session (handles token in URL hash automatically)
+        // 1. Get current session
         const { data: { session } } = await supabase.auth.getSession();
 
-        // 2. Check for password recovery flow via URL hash
+        // 2. Check for recovery flow via URL hash
         const hash = window.location.hash;
-        if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+        const isRecovery = hash && (hash.includes('type=recovery') || hash.includes('access_token'));
+
+        if (isRecovery) {
           console.log('🔄 Recovery flow detected');
-          navigateTo('reset-password');
+          // Important: We navigate later to ensure React status is ready
         }
 
-        // 3. Handle LocalStorage Persistence with Safety
+        // 3. Handle Persistence with Security
         const savedState = localStorage.getItem('chefscan_state');
+        let preppedView: AppView | undefined;
+
         if (savedState) {
           const parsed = JSON.parse(savedState);
-
-          // Validate user mismatch
-          if (session && parsed.user?.id && parsed.user.id !== session.user.id) {
-            console.warn('🔐 User mismatch: clearing stale cache');
-            localStorage.removeItem('chefscan_state');
-          } else if (!session && parsed.user?.id) {
-            // User logged out but state remains? Clear it.
-            console.warn('🔐 No session: clearing stale cache');
+          // If user changed, or logged out, clear
+          if ((session && parsed.user?.id && parsed.user.id !== session.user.id) || (!session && parsed.user?.id)) {
             localStorage.removeItem('chefscan_state');
           } else {
-            // Safe to load cached state
+            // Apply cached state
+            preppedView = isRecovery ? 'reset-password' : (parsed.currentView || 'dashboard');
             setState(prev => ({
               ...prev,
               ...parsed,
-              currentView: parsed.currentView || (hash.includes('access_token') ? 'reset-password' : 'dashboard'),
-              previousView: parsed.previousView || null
+              currentView: preppedView!,
             }));
             if (parsed.selectedRecipe) setSelectedRecipe(parsed.selectedRecipe);
             if (parsed.lastTabViews) setLastTabViews(parsed.lastTabViews);
           }
         }
 
-        // 4. If we have a session, fetch fresh data
+        // 4. Force recovery view if no cached state was applied
+        if (isRecovery && !preppedView) {
+          navigateTo('reset-password');
+          preppedView = 'reset-password';
+        }
+
+        // 5. Clean URL hash if we've handled it
+        if (isRecovery) {
+          setTimeout(() => {
+            window.history.replaceState(null, '', window.location.pathname);
+          }, 100);
+        }
+
+        // 6. Fetch / Validate Profile
         if (session) {
-          fetchProfile(session.user.id, session.user.email || '', true);
+          const shouldRedirect = !isRecovery && (preppedView === 'login' || preppedView === 'landing' || !preppedView);
+          fetchProfile(session.user.id, session.user.email || '', shouldRedirect);
         }
       } catch (err) {
         console.warn('Initialization error:', err);
@@ -170,62 +182,22 @@ const App: React.FC = () => {
 
     initializeApp();
 
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // Validation check
-        const savedState = localStorage.getItem('chefscan_state');
-        if (savedState) {
-          try {
-            const parsed = JSON.parse(savedState);
-            if (parsed.user?.id && parsed.user.id !== session.user.id) {
-              localStorage.removeItem('chefscan_state');
-            }
-          } catch (e) { }
-        }
-        fetchProfile(session.user.id, session.user.email || '');
+      if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        fetchProfile(session.user.id, session.user.email || '', true);
       } else if (event === 'SIGNED_OUT') {
-        // COMPLETE CLEANUP on logout - Clear all user-specific data
-        try {
-          const savedState = localStorage.getItem('chefscan_state');
-          if (savedState) {
-            const parsed = JSON.parse(savedState);
-            const oldUserId = parsed.user?.id;
-            if (oldUserId) {
-              localStorage.removeItem(`chefscan_reset_${oldUserId}`);
-              localStorage.removeItem(`chefscan_read_notifs_${oldUserId}`);
-            }
-          }
-          localStorage.removeItem('chefscan_state');
-          console.log('🔐 LOGOUT: All user data cleared from localStorage');
-        } catch (e) {
-          console.warn('Error clearing localStorage on logout', e);
-        }
-
+        // Complete Cleanup
+        localStorage.removeItem('chefscan_state');
         setState(prev => ({
           ...prev,
           user: null,
           currentView: 'landing',
           chefCredits: 10,
-          recipeGenerationsToday: 0,
-          favoriteRecipes: [],
-          recentRecipes: [],
           inventory: [],
           history: [],
-          userTags: [],
-          scannedIngredients: [],
-          scannedImage: undefined,
-          acceptedChallengeId: null
+          favoriteRecipes: []
         }));
         setSelectedRecipe(null);
-        setSelectedChef(null);
-        setLastTabViews({
-          dashboard: 'dashboard',
-          favorites: 'favorites',
-          inventory: 'inventory',
-          community: 'community'
-        });
-
       } else if (event === 'PASSWORD_RECOVERY') {
         navigateTo('reset-password');
       }
