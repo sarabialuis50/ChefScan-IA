@@ -40,3 +40,8 @@ test-proxy.js
 
 # VCenter
 .vercel
+
+# VAPID Keys (NEVER commit these)
+vapid-keys.txt
+gen-vapid.js
+gen-vapid.mjs

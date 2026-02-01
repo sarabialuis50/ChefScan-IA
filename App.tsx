@@ -166,11 +166,50 @@ const App: React.FC = () => {
 
         fetchProfile(session.user.id, session.user.email || '');
       } else if (event === 'SIGNED_OUT') {
-        // Clear all user-specific data on logout
+        // COMPLETE CLEANUP on logout - Clear all user-specific data
         try {
+          // Get the old user ID before clearing to remove user-specific keys
+          const savedState = localStorage.getItem('chefscan_state');
+          if (savedState) {
+            const parsed = JSON.parse(savedState);
+            const oldUserId = parsed.user?.id;
+            if (oldUserId) {
+              // Remove all user-specific localStorage entries
+              localStorage.removeItem(`chefscan_reset_${oldUserId}`);
+              localStorage.removeItem(`chefscan_read_notifs_${oldUserId}`);
+            }
+          }
+          // Remove main state
           localStorage.removeItem('chefscan_state');
-        } catch (e) { }
-        setState(prev => ({ ...prev, user: null, currentView: 'landing', chefCredits: 10, recipeGenerationsToday: 0, favoriteRecipes: [], recentRecipes: [], inventory: [], history: [], userTags: [] }));
+          console.log('🔐 LOGOUT: All user data cleared from localStorage');
+        } catch (e) {
+          console.warn('Error clearing localStorage on logout', e);
+        }
+        // Reset React state to factory defaults
+        setState(prev => ({
+          ...prev,
+          user: null,
+          currentView: 'landing',
+          chefCredits: 10,
+          recipeGenerationsToday: 0,
+          favoriteRecipes: [],
+          recentRecipes: [],
+          inventory: [],
+          history: [],
+          userTags: [],
+          scannedIngredients: [],
+          scannedImage: undefined,
+          acceptedChallengeId: null
+        }));
+        setSelectedRecipe(null);
+        setSelectedChef(null);
+        setLastTabViews({
+          dashboard: 'dashboard',
+          favorites: 'favorites',
+          inventory: 'inventory',
+          community: 'community'
+        });
+
       } else if (event === 'PASSWORD_RECOVERY') {
         navigateTo('reset-password');
       }
@@ -226,25 +265,51 @@ const App: React.FC = () => {
   };
 
 
-  // Persistence: Load from LocalStorage
+  // Persistence: Load from LocalStorage - WITH USER VALIDATION
   useEffect(() => {
-    try {
-      const savedState = localStorage.getItem('chefscan_state');
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        setState(prev => ({
-          ...prev,
-          ...parsed,
-          currentView: parsed.currentView || 'dashboard',
-          previousView: parsed.previousView || null
-        }));
-        if (parsed.selectedRecipe) setSelectedRecipe(parsed.selectedRecipe);
-        if (parsed.lastTabViews) setLastTabViews(parsed.lastTabViews);
+    const loadFromStorage = async () => {
+      try {
+        // First, get current session to validate against cached user
+        const { data: { session } } = await supabase.auth.getSession();
+
+        const savedState = localStorage.getItem('chefscan_state');
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+
+          // CRITICAL SECURITY CHECK: Only load if user IDs match
+          if (session?.user?.id && parsed.user?.id && parsed.user.id !== session.user.id) {
+            console.warn('🔐 SECURITY: Cached user ID does not match session user. Clearing localStorage...');
+            localStorage.removeItem('chefscan_state');
+            localStorage.removeItem(`chefscan_reset_${parsed.user.id}`);
+            localStorage.removeItem(`chefscan_read_notifs_${parsed.user.id}`);
+            return; // Do not load stale data
+          }
+
+          // If no session but there's cached data, also skip loading (user logged out)
+          if (!session && parsed.user?.id) {
+            console.warn('🔐 No active session but cached user found. Clearing stale data...');
+            localStorage.removeItem('chefscan_state');
+            return;
+          }
+
+          // Safe to load cached state
+          setState(prev => ({
+            ...prev,
+            ...parsed,
+            currentView: parsed.currentView || 'dashboard',
+            previousView: parsed.previousView || null
+          }));
+          if (parsed.selectedRecipe) setSelectedRecipe(parsed.selectedRecipe);
+          if (parsed.lastTabViews) setLastTabViews(parsed.lastTabViews);
+        }
+      } catch (e) {
+        console.warn("Failed to load state from localStorage", e);
       }
-    } catch (e) {
-      console.warn("Failed to load state from localStorage", e);
-    }
+    };
+
+    loadFromStorage();
   }, []);
+
 
 
   // Persistence: Save to LocalStorage
