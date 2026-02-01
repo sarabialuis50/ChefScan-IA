@@ -38,6 +38,7 @@ interface DashboardViewProps {
   recipeGenerationsToday?: number;
   onShowPremiumModal?: () => void;
   language: 'es' | 'en';
+  isUpdateAvailable?: boolean;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -67,7 +68,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   onDeleteTag,
   recipeGenerationsToday = 0,
   onShowPremiumModal,
-  language
+  language,
+  isUpdateAvailable
 }) => {
   const t = useTranslation(language);
   const [manualInput, setManualInput] = useState('');
@@ -231,7 +233,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 const readNotifs = JSON.parse(localStorage.getItem(key) || '[]');
 
                 // Base notification IDs that exist
-                const baseNotifIds = ['1', '3', '4'];
+                const baseNotifIds = ['1', '4'];
+
+                // '3' only counts if there is an update
+                if (isUpdateAvailable) baseNotifIds.push('3');
 
                 // Check if pantry has urgent items (creates 'pantry_summary' notification)
                 const hasUrgentPantry = inventory && inventory.some(item => {

@@ -1079,6 +1079,7 @@ const App: React.FC = () => {
               onUpdateTag={handleUpdateTag}
               onDeleteTag={handleDeleteTag}
               language={state.language}
+              isUpdateAvailable={needRefresh}
             />
           </Layout>
         );
