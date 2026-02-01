@@ -27,18 +27,18 @@ interface Notification {
   actionPayload?: any;
 }
 
-// Array of rotating health tips
+// Array of rotating health tips (~80 chars max for 2-line display)
 const HEALTH_TIPS = [
-  'Bebe al menos 8 vasos de agua al día.',
-  'Los vegetales verdes mejoran tu digestión.',
-  'Reduce el azúcar para más energía.',
-  'Camina 30 min diarios para tu salud.',
-  'Come despacio, disfruta cada bocado.',
-  'Las frutas frescas son snacks ideales.',
-  'Duerme 7-8 horas para recuperarte.',
-  'Evita cenar muy tarde en la noche.',
-  'Las proteínas te mantienen saciado.',
-  'Cocinar en casa es más saludable.',
+  'Bebe al menos 8 vasos de agua al día para mantener tu cuerpo hidratado.',
+  'Los vegetales verdes mejoran tu digestión y aportan vitaminas esenciales.',
+  'Reducir el azúcar te da más energía estable durante todo el día.',
+  'Camina 30 minutos diarios para mantener tu corazón y mente saludables.',
+  'Come despacio y disfruta cada bocado, tu digestión te lo agradecerá.',
+  'Las frutas frescas son los snacks ideales, naturales y nutritivos.',
+  'Dormir 7-8 horas permite que tu cuerpo se recupere completamente.',
+  'Evita cenar muy tarde, dale tiempo a tu cuerpo para hacer la digestión.',
+  'Las proteínas te mantienen saciado por más tiempo. ¡Inclúyelas siempre!',
+  'Cocinar en casa es más saludable y te da control de los ingredientes.',
 ];
 
 const NotificationsView: React.FC<NotificationsViewProps> = ({
@@ -88,7 +88,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
       {
         id: '1',
         title: 'Recomendación Inteligente',
-        description: 'IA generó recetas con items de tu despensa.',
+        description: 'IA generó recomendaciones de recetas con tu despensa.',
         time: 'Hace 5 min',
         icon: 'auto_awesome',
         type: 'recipe',
