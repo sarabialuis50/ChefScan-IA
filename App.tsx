@@ -119,73 +119,89 @@ const App: React.FC = () => {
 
 
 
-  // Listen for Auth changes
+  // Unified Startup Logic: Auth + Persistence
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      // Check if we are in a password recovery flow via URL hash
-      const hash = window.location.hash;
-      if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
-        navigateTo('reset-password');
-        return;
-      }
+    const initializeApp = async () => {
+      try {
+        // 1. Get current session (handles token in URL hash automatically)
+        const { data: { session } } = await supabase.auth.getSession();
 
-      if (session) {
-        // CRITICAL: Clear localStorage if the saved user doesn't match the session user
-        try {
-          const savedState = localStorage.getItem('chefscan_state');
-          if (savedState) {
-            const parsed = JSON.parse(savedState);
-            if (parsed.user?.id && parsed.user.id !== session.user.id) {
-              console.log('User mismatch detected, clearing localStorage...');
-              localStorage.removeItem('chefscan_state');
-            }
-          }
-        } catch (e) {
-          console.warn('Error checking localStorage user', e);
+        // 2. Check for password recovery flow via URL hash
+        const hash = window.location.hash;
+        if (hash && (hash.includes('type=recovery') || hash.includes('access_token'))) {
+          console.log('🔄 Recovery flow detected');
+          navigateTo('reset-password');
         }
 
-        fetchProfile(session.user.id, session.user.email || '', true);
+        // 3. Handle LocalStorage Persistence with Safety
+        const savedState = localStorage.getItem('chefscan_state');
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+
+          // Validate user mismatch
+          if (session && parsed.user?.id && parsed.user.id !== session.user.id) {
+            console.warn('🔐 User mismatch: clearing stale cache');
+            localStorage.removeItem('chefscan_state');
+          } else if (!session && parsed.user?.id) {
+            // User logged out but state remains? Clear it.
+            console.warn('🔐 No session: clearing stale cache');
+            localStorage.removeItem('chefscan_state');
+          } else {
+            // Safe to load cached state
+            setState(prev => ({
+              ...prev,
+              ...parsed,
+              currentView: parsed.currentView || (hash.includes('access_token') ? 'reset-password' : 'dashboard'),
+              previousView: parsed.previousView || null
+            }));
+            if (parsed.selectedRecipe) setSelectedRecipe(parsed.selectedRecipe);
+            if (parsed.lastTabViews) setLastTabViews(parsed.lastTabViews);
+          }
+        }
+
+        // 4. If we have a session, fetch fresh data
+        if (session) {
+          fetchProfile(session.user.id, session.user.email || '', true);
+        }
+      } catch (err) {
+        console.warn('Initialization error:', err);
       }
-    });
+    };
+
+    initializeApp();
 
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // CRITICAL: Clear localStorage if the new user doesn't match the old saved user
-        try {
-          const savedState = localStorage.getItem('chefscan_state');
-          if (savedState) {
+        // Validation check
+        const savedState = localStorage.getItem('chefscan_state');
+        if (savedState) {
+          try {
             const parsed = JSON.parse(savedState);
             if (parsed.user?.id && parsed.user.id !== session.user.id) {
-              console.log('SIGNED_IN: User mismatch, clearing localStorage...');
               localStorage.removeItem('chefscan_state');
             }
-          }
-        } catch (e) { }
-
+          } catch (e) { }
+        }
         fetchProfile(session.user.id, session.user.email || '');
       } else if (event === 'SIGNED_OUT') {
         // COMPLETE CLEANUP on logout - Clear all user-specific data
         try {
-          // Get the old user ID before clearing to remove user-specific keys
           const savedState = localStorage.getItem('chefscan_state');
           if (savedState) {
             const parsed = JSON.parse(savedState);
             const oldUserId = parsed.user?.id;
             if (oldUserId) {
-              // Remove all user-specific localStorage entries
               localStorage.removeItem(`chefscan_reset_${oldUserId}`);
               localStorage.removeItem(`chefscan_read_notifs_${oldUserId}`);
             }
           }
-          // Remove main state
           localStorage.removeItem('chefscan_state');
           console.log('🔐 LOGOUT: All user data cleared from localStorage');
         } catch (e) {
           console.warn('Error clearing localStorage on logout', e);
         }
-        // Reset React state to factory defaults
+
         setState(prev => ({
           ...prev,
           user: null,
@@ -265,50 +281,7 @@ const App: React.FC = () => {
   };
 
 
-  // Persistence: Load from LocalStorage - WITH USER VALIDATION
-  useEffect(() => {
-    const loadFromStorage = async () => {
-      try {
-        // First, get current session to validate against cached user
-        const { data: { session } } = await supabase.auth.getSession();
 
-        const savedState = localStorage.getItem('chefscan_state');
-        if (savedState) {
-          const parsed = JSON.parse(savedState);
-
-          // CRITICAL SECURITY CHECK: Only load if user IDs match
-          if (session?.user?.id && parsed.user?.id && parsed.user.id !== session.user.id) {
-            console.warn('🔐 SECURITY: Cached user ID does not match session user. Clearing localStorage...');
-            localStorage.removeItem('chefscan_state');
-            localStorage.removeItem(`chefscan_reset_${parsed.user.id}`);
-            localStorage.removeItem(`chefscan_read_notifs_${parsed.user.id}`);
-            return; // Do not load stale data
-          }
-
-          // If no session but there's cached data, also skip loading (user logged out)
-          if (!session && parsed.user?.id) {
-            console.warn('🔐 No active session but cached user found. Clearing stale data...');
-            localStorage.removeItem('chefscan_state');
-            return;
-          }
-
-          // Safe to load cached state
-          setState(prev => ({
-            ...prev,
-            ...parsed,
-            currentView: parsed.currentView || 'dashboard',
-            previousView: parsed.previousView || null
-          }));
-          if (parsed.selectedRecipe) setSelectedRecipe(parsed.selectedRecipe);
-          if (parsed.lastTabViews) setLastTabViews(parsed.lastTabViews);
-        }
-      } catch (e) {
-        console.warn("Failed to load state from localStorage", e);
-      }
-    };
-
-    loadFromStorage();
-  }, []);
 
 
 
