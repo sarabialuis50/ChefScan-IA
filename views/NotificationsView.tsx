@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation, Language } from '../utils/i18n';
 import { InventoryItem } from '../types';
 import { getItemStatus } from '../utils/itemStatus';
@@ -11,6 +11,7 @@ interface NotificationsViewProps {
   onGenerateRecipe?: (ingredients: string[]) => void;
   isUpdateAvailable?: boolean;
   onUpdateAction?: () => void;
+  userId?: string;
 }
 
 
@@ -26,18 +27,63 @@ interface Notification {
   actionPayload?: any;
 }
 
+// Array of rotating health tips
+const HEALTH_TIPS = [
+  'Bebe al menos 8 vasos de agua al día.',
+  'Los vegetales verdes mejoran tu digestión.',
+  'Reduce el azúcar para más energía.',
+  'Camina 30 min diarios para tu salud.',
+  'Come despacio, disfruta cada bocado.',
+  'Las frutas frescas son snacks ideales.',
+  'Duerme 7-8 horas para recuperarte.',
+  'Evita cenar muy tarde en la noche.',
+  'Las proteínas te mantienen saciado.',
+  'Cocinar en casa es más saludable.',
+];
+
 const NotificationsView: React.FC<NotificationsViewProps> = ({
   onBack,
   language,
   inventory,
   onGenerateRecipe,
   isUpdateAvailable,
-  onUpdateAction
+  onUpdateAction,
+  userId
 }) => {
 
   const t = useTranslation(language);
   const [activeFilter, setActiveFilter] = useState('Todas');
+
+  // Get today's health tip based on the day of month (rotates through the list)
+  const todaysHealthTip = useMemo(() => {
+    const dayOfMonth = new Date().getDate();
+    return HEALTH_TIPS[dayOfMonth % HEALTH_TIPS.length];
+  }, []);
+
+  // Load read notifications from localStorage
+  const getReadNotifications = (): string[] => {
+    try {
+      const key = userId ? `chefscan_read_notifs_${userId}` : 'chefscan_read_notifs';
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Save read notifications to localStorage
+  const saveReadNotifications = (ids: string[]) => {
+    try {
+      const key = userId ? `chefscan_read_notifs_${userId}` : 'chefscan_read_notifs';
+      localStorage.setItem(key, JSON.stringify(ids));
+    } catch { }
+  };
+
+  const [readNotifIds, setReadNotifIds] = useState<string[]>(getReadNotifications);
+
   const [notifications, setNotifications] = useState<Notification[]>(() => {
+    const readIds = getReadNotifications();
+
     const baseNotifications: Notification[] = [
       {
         id: '1',
@@ -46,32 +92,33 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
         time: 'Hace 5 min',
         icon: 'auto_awesome',
         type: 'recipe',
-        unread: true,
+        unread: !readIds.includes('1'),
         actionLabel: 'Ver Receta',
-        actionPayload: ['Salmón', 'Espárragos', 'Limón', 'Ajo'] // Example ingredients hidden from user view
+        actionPayload: ['Salmón', 'Espárragos', 'Limón', 'Ajo']
       },
       {
         id: '3',
         title: isUpdateAvailable ? 'Nueva Versión Disponible' : 'Actualización del Núcleo',
         description: isUpdateAvailable
           ? 'Hay una nueva actualización de ChefScan.IA lista para mejorar tu experiencia.'
-          : 'ChefScan Engine v2.5 ya está activo con mayor precisión visual.',
+          : 'ChefScan.IA Engine v2.5 ya está activo con mayor precisión visual.',
         time: isUpdateAvailable ? 'AHORA' : 'Ayer',
         icon: isUpdateAvailable ? 'system_update' : 'developer_board',
         type: 'system',
-        unread: isUpdateAvailable ? true : false,
+        unread: isUpdateAvailable ? !readIds.includes('3') : false,
         actionLabel: isUpdateAvailable ? 'Actualizar' : undefined,
         actionPayload: 'pwa-update'
       },
 
+
       {
         id: '4',
         title: 'Consejo Saludable',
-        description: 'Recuerda que los vegetales verdes hoy combinan con tu dieta keto.',
-        time: 'Ayer',
+        description: todaysHealthTip,
+        time: 'Hoy',
         icon: 'tips_and_updates',
         type: 'alert',
-        unread: false
+        unread: !readIds.includes('4')
       }
     ];
 
@@ -102,13 +149,12 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
     }
 
     let descriptionParts: string[] = [];
-    if (expiredCount > 0) descriptionParts.push(`${expiredCount} items vencido(s)`);
-    if (expiringTodayCount > 0) descriptionParts.push(`${expiringTodayCount} items que vencen hoy`);
-    if (expiringTomorrowCount > 0) descriptionParts.push(`${expiringTomorrowCount} items que vencen mañana`);
+    if (expiredCount > 0) descriptionParts.push(`${expiredCount} vencido(s)`);
+    if (expiringTodayCount > 0) descriptionParts.push(`${expiringTodayCount} vencen hoy`);
+    if (expiringTomorrowCount > 0) descriptionParts.push(`${expiringTomorrowCount} vencen mañana`);
 
-    // Si no hay nada urgente pero si avisos próximos
     if (descriptionParts.length === 0 && proxExpiryCount > 0) {
-      descriptionParts.push(`${proxExpiryCount} items próximos a vencer`);
+      descriptionParts.push(`${proxExpiryCount} próximos a vencer`);
     }
 
     const description = `Tienes ${descriptionParts.join(', ')} en tu despensa.`;
@@ -121,14 +167,27 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
       time: 'Hace un momento',
       icon: 'inventory_2',
       type: 'pantry',
-      unread: isUrgent
+      unread: isUrgent && !readIds.includes('pantry_summary')
     };
 
     return [pantrySummaryNotification, ...baseNotifications];
   });
 
+  // Mark notification as read
+  const markAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n =>
+      n.id === id ? { ...n, unread: false } : n
+    ));
+    const newReadIds = [...readNotifIds, id].filter((v, i, a) => a.indexOf(v) === i);
+    setReadNotifIds(newReadIds);
+    saveReadNotifications(newReadIds);
+  };
+
   const markAllRead = () => {
+    const allIds = notifications.map(n => n.id);
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    setReadNotifIds(allIds);
+    saveReadNotifications(allIds);
   };
 
   const filteredNotifications = notifications.filter(n => {
@@ -188,11 +247,7 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
           filteredNotifications.map((notif) => (
             <div
               key={notif.id}
-              onClick={() => {
-                setNotifications(prev => prev.map(n =>
-                  n.id === notif.id ? { ...n, unread: false } : n
-                ));
-              }}
+              onClick={() => markAsRead(notif.id)}
               style={{ backgroundColor: 'var(--bg-surface)', borderColor: notif.unread ? 'var(--primary)' : 'var(--card-border)' }}
               className={`relative rounded-[1.5rem] p-4 flex gap-4 border transition-all cursor-pointer active:scale-95 ${notif.unread ? 'bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]' : ''
                 }`}
@@ -208,21 +263,20 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
                 <span className="material-symbols-outlined">{notif.icon}</span>
               </div>
 
-              <div className="flex-1 space-y-1">
-                <div className="flex justify-between items-start">
-                  <h3 style={{ color: notif.unread ? 'var(--text-main)' : 'var(--text-muted)' }} className={`text-sm font-bold uppercase tracking-tight`}>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start gap-2">
+                  <h3 style={{ color: notif.unread ? 'var(--text-main)' : 'var(--text-muted)' }} className="text-sm font-bold uppercase tracking-tight leading-tight">
                     {notif.title}
                   </h3>
-                  <span style={{ color: 'var(--text-muted)' }} className="text-[9px] font-bold uppercase tracking-tighter whitespace-nowrap pt-0.5">
+                  <span style={{ color: 'var(--text-muted)' }} className="text-[8px] font-bold uppercase tracking-tighter whitespace-nowrap flex-shrink-0 pt-0.5">
                     {notif.time}
                   </span>
                 </div>
-                <p style={{ color: notif.unread ? 'var(--text-muted)' : 'var(--text-muted)' }} className={`text-xs leading-relaxed opacity-80`}>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs leading-relaxed mt-1">
                   {notif.description}
-
                   {/* Action Button Inline */}
                   {notif.actionLabel && (onGenerateRecipe || (notif.actionPayload === 'pwa-update' && onUpdateAction)) && (
-                    <button
+                    <span
                       onClick={(e) => {
                         e.stopPropagation();
                         if (notif.actionPayload === 'pwa-update' && onUpdateAction) {
@@ -231,19 +285,17 @@ const NotificationsView: React.FC<NotificationsViewProps> = ({
                           onGenerateRecipe(notif.actionPayload);
                         }
                       }}
-                      className={`mt-2 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 hover:underline decoration-2 underline-offset-4 transition-all ${notif.actionPayload === 'pwa-update'
-                          ? "text-[#39FF14] decoration-[#39FF14]"
-                          : "text-primary decoration-primary"
+                      className={`ml-1 text-[10px] font-black uppercase tracking-widest cursor-pointer hover:underline decoration-2 underline-offset-4 transition-all ${notif.actionPayload === 'pwa-update'
+                        ? "text-[#39FF14] decoration-[#39FF14]"
+                        : "text-primary decoration-primary"
                         }`}
                     >
-                      {notif.actionLabel}
-                      <span className="material-symbols-outlined text-sm">
-                        {notif.actionPayload === 'pwa-update' ? 'refresh' : 'arrow_forward'}
-                      </span>
-                    </button>
+                      {notif.actionLabel} →
+                    </span>
                   )}
                 </p>
               </div>
+
 
               {notif.unread && (
                 <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full neon-glow"></div>

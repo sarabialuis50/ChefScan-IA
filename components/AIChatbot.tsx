@@ -133,12 +133,19 @@ const AIChatbot: React.FC<AIChatbotProps> = ({
       currentAudio.currentTime = 0;
       setCurrentAudio(null);
     }
+<<<<<<< HEAD
 
     // Stop Web Speech API (Browser Text-to-Speech)
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
 
+=======
+    // Also stop Speech Synthesis if fallback is being used
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+>>>>>>> 071af03c16780be6910fb933007727aac4ef29d8
     setIsSpeaking(null);
   };
 
