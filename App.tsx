@@ -136,15 +136,24 @@ const App: React.FC = () => {
         // Don't redirect here - let initializeApp handle cached state
       } else if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out');
+        // Limpiar TODO el localStorage relacionado con el usuario
         localStorage.removeItem('chefscan_state');
+        // Limpiar las claves de reset de créditos de cualquier usuario
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('chefscan_reset_')) {
+            localStorage.removeItem(key);
+          }
+        });
         setState(prev => ({
           ...prev,
           user: null,
           currentView: 'landing',
           chefCredits: 10,
+          recipeGenerationsToday: 0,
           inventory: [],
           history: [],
-          favoriteRecipes: []
+          favoriteRecipes: [],
+          userTags: []
         }));
         setSelectedRecipe(null);
       } else if (event === 'PASSWORD_RECOVERY') {
@@ -191,9 +200,19 @@ const App: React.FC = () => {
 
         if (savedState && session) {
           const parsed = JSON.parse(savedState);
-          // If user changed, clear cache
+          // If user changed, clear ALL cache and force fresh profile load
           if (parsed.user?.id && parsed.user.id !== session.user.id) {
+            console.warn('⚠️ User mismatch detected! Clearing stale cache and loading correct profile...');
             localStorage.removeItem('chefscan_state');
+            // Limpiar también las claves de reset de otro usuario
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('chefscan_reset_')) {
+                localStorage.removeItem(key);
+              }
+            });
+            // Forzar carga del perfil correcto
+            fetchProfile(session.user.id, session.user.email || '', true);
+            return;
           } else {
             // Apply cached state
             setState(prev => ({
@@ -561,7 +580,13 @@ const App: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    // Limpiar localStorage ANTES del signOut para evitar recargas con estado viejo
+    localStorage.removeItem('chefscan_state');
+    localStorage.removeItem('chefscan_theme');
+    localStorage.removeItem('chefscan_lang');
+
+    // Cerrar TODAS las sesiones activas del usuario (no solo la actual)
+    await supabase.auth.signOut({ scope: 'global' });
   };
 
   const handleShare = async () => {
@@ -792,11 +817,34 @@ const App: React.FC = () => {
       setState(prev => ({ ...prev, acceptedChallengeId: itemId }));
     }
 
-    // Check Limits
-    const dailyLimit = state.user?.isPremium ? 6 : 2;
-    if (state.recipeGenerationsToday >= dailyLimit) {
-      setPremiumModal({ isOpen: true, reason: 'recipes' });
-      return;
+    // Check Limits - PRIMERO verificar en la DB para evitar condiciones de carrera
+    if (state.user?.id) {
+      const { data: freshProfile } = await supabase
+        .from('profiles')
+        .select('recipe_generations_today, is_premium, chef_credits')
+        .eq('id', state.user.id)
+        .single();
+
+      if (freshProfile) {
+        const dailyLimit = freshProfile.is_premium ? 6 : 2;
+        if (freshProfile.recipe_generations_today >= dailyLimit) {
+          setPremiumModal({ isOpen: true, reason: 'recipes' });
+          // Actualizar el estado local con el valor real de la DB
+          setState(prev => ({
+            ...prev,
+            recipeGenerationsToday: freshProfile.recipe_generations_today,
+            chefCredits: freshProfile.chef_credits
+          }));
+          return;
+        }
+      }
+    } else {
+      // Fallback: usar el estado local si no hay usuario
+      const dailyLimit = state.user?.isPremium ? 6 : 2;
+      if (state.recipeGenerationsToday >= dailyLimit) {
+        setPremiumModal({ isOpen: true, reason: 'recipes' });
+        return;
+      }
     }
 
     setLastUsedIngredients(ingredients);
