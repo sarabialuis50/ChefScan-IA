@@ -1,0 +1,39 @@
+# ChefScan.IA - Security & Performance Config for Hostinger
+
+<IfModule mod_headers.c>
+    # Content Security Policy (CSP)
+    # Allows self, local fonts, Supabase, Google Fonts, and Google Images
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://* http://*; connect-src 'self' https://vhodqxomxpjzfdvwmaok.supabase.co https://generativelanguage.googleapis.com; frame-ancestors 'none'; upgrade-insecure-requests;"
+
+    # Force HTTPS (HSTS)
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Prevent Clickjacking
+    Header set X-Frame-Options "DENY"
+
+    # Prevent MIME Sniffing
+    Header set X-Content-Type-Options "nosniff"
+
+    # Control Referrer Information
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Feature/Permissions Policy
+    Header set Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+</IfModule>
+
+# Handle Single Page Application Routing
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
+
+# Caching for Static Assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>

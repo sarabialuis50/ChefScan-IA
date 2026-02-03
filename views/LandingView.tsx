@@ -94,9 +94,9 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
               <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'rgba(var(--primary-rgb), 0.3)' }} className="w-14 h-14 rounded-2xl flex items-center justify-center neon-glow border overflow-hidden">
                 <img src="/landing-logo.png" alt="Logo" className="w-10 h-10 object-contain" />
               </div>
-              <h2 style={{ color: 'var(--text-main)' }} className="text-2xl font-bold tracking-tighter drop-shadow-lg mt-2">
+              <div style={{ color: 'var(--text-main)' }} className="text-2xl font-bold tracking-tighter drop-shadow-lg mt-2">
                 Chef<span className="text-primary">Scan.IA</span>
-              </h2>
+              </div>
             </div>
           </div>
 
@@ -106,6 +106,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
               <div className="relative flex-1 aspect-[4/4.5] rounded-3xl overflow-hidden mb-4 bg-[#111] border border-white/10">
                 <img
                   alt="Scan preview"
+                  loading="lazy"
                   className="w-full h-full object-cover opacity-90"
                   src="/landing-avocado.png"
                 />
@@ -131,10 +132,10 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
           {/* Mobile Footer/Buttons */}
           <div className="relative z-20 flex flex-col px-6 pb-12 w-full gap-8">
             <div className="text-center space-y-3">
-              <h1 style={{ color: 'var(--text-main)' }} className="text-3xl font-display font-bold leading-tight tracking-tight px-2 uppercase">
+              <h2 style={{ color: 'var(--text-main)' }} className="text-3xl font-display font-bold leading-tight tracking-tight px-2 uppercase">
                 Reconocimiento de<br />
                 <span className="text-primary italic">precisión IA</span>
-              </h1>
+              </h2>
               <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed max-w-[280px] mx-auto">
                 Apunta tu cámara a cualquier ingrediente y descubre infinitas posibilidades culinarias.
               </p>
@@ -166,6 +167,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
               <img
                 src="/portada-pc.png"
                 alt="ChefScan PC Background"
+                loading="lazy"
                 className="w-full h-full object-cover opacity-15"
               />
             </div>
@@ -253,6 +255,7 @@ const LandingView: React.FC<LandingViewProps> = ({ onStart }) => {
                     <div className="relative rounded-[2rem] overflow-hidden mb-6 aspect-[4/5] bg-[#161616] border border-white/10 group shadow-2xl">
                       <img
                         alt="Scan preview"
+                        loading="lazy"
                         className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform group-hover:scale-110 duration-1000"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwDtYbKrZNV6TF4H8yqRkaG2EubCEiRIeEuHUNeBX3-TMnG_UGhfZ9Prohd3Xah0B5SNeAmIe4-AZ26K6YtujiDhtwEWTUa0Y9_O4eZq5fNTsORWqvW9xdw9_x88D_Dm4NLoZNMHwsnVt1-bueiiEnURd6OxM71FluHkFJPyjXTwAXQDLMT-hAoycZrIrav8yLh2diVnNcl7Vk4_X3YUixmFHIfXdMRT2Z6APMbVBopCscaHZ5SxiW88l2-bZyrcrSaR5bnyaWbCU"
                       />

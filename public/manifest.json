@@ -1,6 +1,7 @@
 {
     "name": "ChefScan.IA",
     "short_name": "ChefScan.IA",
+    "lang": "es",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",
