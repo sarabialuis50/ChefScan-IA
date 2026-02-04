@@ -677,7 +677,7 @@ const CommunityView: React.FC<CommunityViewProps> = ({ onBack, onRecipeClick, on
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" style={{ backgroundColor: 'var(--bg-app)', opacity: 0.5 }}>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar" style={{ backgroundColor: 'var(--bg-app)' }}>
                             {loadingComments ? (
                                 <div className="flex justify-center py-10">
                                     <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>

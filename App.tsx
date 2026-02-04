@@ -393,15 +393,19 @@ const App: React.FC = () => {
     }
 
     // --- CLIENT-SIDE RESET GUARD ---
-    // If the DB reset logic fails, we force a reset the first time the user opens the app on a new day.
+    // Fix: We must check both LocalStorage AND the DB's last_reset_date.
+    // Without checking DB, logging out (clearing LS) and logging in would grant fresh credits.
     if (profileData) {
       const today = new Date().toISOString().split('T')[0];
       const localResetKey = `chefscan_reset_${userId}`;
       const lastLocalReset = localStorage.getItem(localResetKey);
 
-      if (lastLocalReset !== today) {
-        // It's a new day or first time loading. Check if we actually need to reset.
-        // We only reset if the generations > 0 or credits < default.
+      // Trust the server: if DB says it was reset/updated today, DO NOT reset again.
+      const isDbupToDate = profileData.last_reset_date === today;
+
+      if (!isDbupToDate && lastLocalReset !== today) {
+        // It's a new day and neither DB nor LocalStorage knows about it.
+        // We only reset if there's something to reset (generations > 0 or wrong credits)
         const defaultCredits = profileData.is_premium ? 999 : 10;
 
         if (profileData.recipe_generations_today > 0 || profileData.chef_credits !== defaultCredits) {
@@ -410,7 +414,8 @@ const App: React.FC = () => {
             .from('profiles')
             .update({
               recipe_generations_today: 0,
-              chef_credits: defaultCredits
+              chef_credits: defaultCredits,
+              last_reset_date: today // IMPORTANT: Update DB date too so it persists across logouts
             })
             .eq('id', userId);
 
@@ -418,9 +423,16 @@ const App: React.FC = () => {
             localStorage.setItem(localResetKey, today);
             profileData.recipe_generations_today = 0;
             profileData.chef_credits = defaultCredits;
+            profileData.last_reset_date = today;
           }
         } else {
-          // Already reset or new account, just mark as reset today
+          // Nothing to reset (new user or already 0), just mark as sync
+          localStorage.setItem(localResetKey, today);
+        }
+      } else {
+        // DB is already up to date OR LocalStorage is up to date.
+        // Ensure LocalStorage matches DB to avoid future checks
+        if (lastLocalReset !== today) {
           localStorage.setItem(localResetKey, today);
         }
       }
@@ -773,10 +785,10 @@ const App: React.FC = () => {
       ...prev,
       scannedIngredients: ingredients,
       scannedImage: image64,
-      recipeGenerationsToday: prev.recipeGenerationsToday + 1
+      recipeGenerationsToday: prev.recipeGenerationsToday + 1 // Restore: Scan costs 1 credit
     }));
 
-    // Actualizar límite en DB
+    // Restore: Update limit in DB on Scan
     if (state.user?.id) {
       await supabase.rpc('increment_recipe_generations', { user_id: state.user.id });
     }
@@ -788,7 +800,7 @@ const App: React.FC = () => {
         const blob = base64ToBlob(image64, 'image/jpeg');
 
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('avatars') // Usamos 'avatars' por ahora como el bucket principal
+          .from('avatars')
           .upload(`scans/${fileName}`, blob);
 
         if (!uploadError) {
@@ -813,38 +825,49 @@ const App: React.FC = () => {
 
   const handleStartGeneration = async (ingredients: string[], portions: number, itemId?: string) => {
     // Si viene de un desafío de "desperdicio cero", marcamos el ID del reto como aceptado
-    // para que no vuelva a aparecer en el dashboard, pero lo mantenemos en la despensa.
     if (itemId) {
       setState(prev => ({ ...prev, acceptedChallengeId: itemId }));
     }
 
-    // Check Limits - PRIMERO verificar en la DB para evitar condiciones de carrera
-    if (state.user?.id) {
-      const { data: freshProfile } = await supabase
-        .from('profiles')
-        .select('recipe_generations_today, is_premium, chef_credits')
-        .eq('id', state.user.id)
-        .single();
+    // CRÍTICO: Verificar si ya pagamos "el peaje" en el escaneo.
+    // Si tenemos ingredientes escaneados en el estado, significa que venimos del flujo de Escáner/Galería
+    // y YA se cobró el crédito en handleScanComplete. No debemos cobrar de nuevo.
+    // Si es manual (scannedIngredients vacio), cobramos AQUÍ.
+    const isAlreadyPaid = state.scannedIngredients.length > 0;
 
-      if (freshProfile) {
-        const dailyLimit = freshProfile.is_premium ? 6 : 2;
-        if (freshProfile.recipe_generations_today >= dailyLimit) {
+    // Check Limits - PRIMERO verificar en la DB para evitar condiciones de carrera
+    // SOLAMENTE verificamos bloqueo si NO hemos pagado aún (Manual Flow)
+    // O si queremos bloquear inclusive si ya pagó, deberíamos chequearlo al inicio de handleScanComplete.
+    // Pero aquí asumimos: Si ya pagó (Scanned), tiene derecho a generar.
+    // Si es Manual, verificamos si tiene saldo.
+
+    if (!isAlreadyPaid) {
+      if (state.user?.id) {
+        const { data: freshProfile } = await supabase
+          .from('profiles')
+          .select('recipe_generations_today, is_premium, chef_credits')
+          .eq('id', state.user.id)
+          .single();
+
+        if (freshProfile) {
+          const dailyLimit = freshProfile.is_premium ? 6 : 2;
+          if (freshProfile.recipe_generations_today >= dailyLimit) {
+            setPremiumModal({ isOpen: true, reason: 'recipes' });
+            setState(prev => ({
+              ...prev,
+              recipeGenerationsToday: freshProfile.recipe_generations_today,
+              chefCredits: freshProfile.chef_credits
+            }));
+            return;
+          }
+        }
+      } else {
+        // Fallback: usar el estado local si no hay usuario
+        const dailyLimit = state.user?.isPremium ? 6 : 2;
+        if (state.recipeGenerationsToday >= dailyLimit) {
           setPremiumModal({ isOpen: true, reason: 'recipes' });
-          // Actualizar el estado local con el valor real de la DB
-          setState(prev => ({
-            ...prev,
-            recipeGenerationsToday: freshProfile.recipe_generations_today,
-            chefCredits: freshProfile.chef_credits
-          }));
           return;
         }
-      }
-    } else {
-      // Fallback: usar el estado local si no hay usuario
-      const dailyLimit = state.user?.isPremium ? 6 : 2;
-      if (state.recipeGenerationsToday >= dailyLimit) {
-        setPremiumModal({ isOpen: true, reason: 'recipes' });
-        return;
       }
     }
 
@@ -902,7 +925,8 @@ const App: React.FC = () => {
           ...prev,
           recentRecipes: recipes,
           currentView: 'results',
-          recipeGenerationsToday: prev.recipeGenerationsToday + 1,
+          // incrementamos SOLO si es manual (porque scan ya incrementó)
+          recipeGenerationsToday: isAlreadyPaid ? prev.recipeGenerationsToday : prev.recipeGenerationsToday + 1,
           chefCredits: prev.user?.isPremium ? 999 : prev.chefCredits,
           history: [
             {
@@ -919,8 +943,8 @@ const App: React.FC = () => {
           ]
         }));
 
-        // Actualizar límite en DB
-        if (state.user?.id) {
+        // Actualizar límite en DB SOLO si es flujo Manual
+        if (!isAlreadyPaid && state.user?.id) {
           await supabase.rpc('increment_recipe_generations', { user_id: state.user.id });
         }
       }, 800);
@@ -1350,6 +1374,11 @@ const App: React.FC = () => {
           <Layout activeNav="profile" onNavClick={handleNavClick}>
             <ProfileView
               user={state.user}
+              stats={{
+                recipes: state.favoriteRecipes.length,
+                inventory: state.inventory.length,
+                generated: state.history.length
+              }}
               onLogout={handleLogout}
               onEditProfile={() => navigateTo('settings')}
             />

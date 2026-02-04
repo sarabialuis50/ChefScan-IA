@@ -2,11 +2,16 @@ import React from 'react';
 
 interface ProfileViewProps {
   user: any;
+  stats: {
+    recipes: number;
+    inventory: number;
+    generated: number;
+  };
   onLogout: () => void;
   onEditProfile: () => void;
 }
 
-const ProfileView: React.FC<ProfileViewProps> = ({ user, onLogout, onEditProfile }) => {
+const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout, onEditProfile }) => {
   return (
     <div className="flex flex-col pb-1">
       <nav style={{ borderColor: 'var(--card-border)' }} className="flex items-center justify-between p-6 border-b">
@@ -48,8 +53,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, onLogout, onEditProfile
       </header>
 
       <section className="px-6 grid grid-cols-3 gap-3">
-        <StatCard value="12" label="Recetas" />
-        <StatCard value="48" label="Escaneos" />
+        <StatCard value={stats.recipes.toString()} label="Colección" />
+        <StatCard value={stats.inventory.toString()} label="Despensa" />
         <StatCard value={user?.isPremium ? 'PRO' : 'FREE'} label="Nivel" active={user?.isPremium} />
       </section>
 

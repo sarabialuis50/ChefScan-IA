@@ -339,7 +339,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               ) : (
                 <>
                   <div style={{ backgroundColor: 'var(--primary-glow)', color: 'var(--primary)' }} className="w-20 h-20 rounded-full flex items-center justify-center mb-4 border border-primary/30 shadow-[0_0_20px_var(--primary-glow)]">
-                    <span className="material-symbols-outlined text-4xl notranslate icon-visible transform -translate-y-[1px]" style={{ textShadow: 'var(--primary-text-glow)' }}>photo_camera</span>
+                    <span className="material-symbols-outlined text-4xl notranslate icon-visible transform -translate-y-[0.5px]" style={{ textShadow: 'var(--primary-text-glow)' }}>photo_camera</span>
                   </div>
                   <h4 style={{ color: 'var(--text-main)' }} className="font-bold text-lg mb-0 leading-tight">Vista previa de la foto</h4>
                   <p style={{ color: 'var(--text-muted)' }} className="text-[12px] font-medium leading-tight">Toma una foto o selecciona de tu galería</p>
