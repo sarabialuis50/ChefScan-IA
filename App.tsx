@@ -50,7 +50,7 @@ const App: React.FC = () => {
       recentRecipes: [],
       favoriteRecipes: [],
       recipeGenerationsToday: 0,
-      chefCredits: 10,
+      chefCredits: 5,
       inventory: [],
       history: [],
       userTags: [],
@@ -149,7 +149,7 @@ const App: React.FC = () => {
           ...prev,
           user: null,
           currentView: 'landing',
-          chefCredits: 10,
+          chefCredits: 5,
           recipeGenerationsToday: 0,
           inventory: [],
           history: [],
@@ -380,7 +380,7 @@ const App: React.FC = () => {
           username: email.split('@')[0].slice(0, 10),
           email: email,
           name: email.split('@')[0],
-          chef_credits: 10,
+          chef_credits: 5,
           created_at: new Date().toISOString()
         }).select().single();
 
@@ -406,7 +406,7 @@ const App: React.FC = () => {
       if (!isDbupToDate && lastLocalReset !== today) {
         // It's a new day and neither DB nor LocalStorage knows about it.
         // We only reset if there's something to reset (generations > 0 or wrong credits)
-        const defaultCredits = profileData.is_premium ? 999 : 10;
+        const defaultCredits = profileData.is_premium ? 999 : 5;
 
         if (profileData.recipe_generations_today > 0 || profileData.chef_credits !== defaultCredits) {
           console.log("New day detected (Client-side). Resetting credits and generations...");
@@ -450,7 +450,7 @@ const App: React.FC = () => {
       allergies: [],
       cookingGoal: 'explorar',
       recipeGenerationsToday: 0,
-      chefCredits: 10
+      chefCredits: 5
     };
 
     // Safe Profile Data (DB or Fallback)
@@ -469,7 +469,7 @@ const App: React.FC = () => {
       bio: profileData.bio,
       phone: profileData.phone,
       recipeGenerationsToday: profileData.recipe_generations_today || 0,
-      chefCredits: profileData.chef_credits ?? (profileData.is_premium ? 999 : 10)
+      chefCredits: profileData.chef_credits ?? (profileData.is_premium ? 999 : 5)
     } : fallbackUser;
 
     // Fetch sub-data (Favorites, History, Inventory) - Safe to be empty
@@ -588,7 +588,7 @@ const App: React.FC = () => {
       ...prev,
       user,
       currentView: 'dashboard',
-      chefCredits: user.isPremium ? 999 : 10
+      chefCredits: user.isPremium ? 999 : 5
     }));
   };
 

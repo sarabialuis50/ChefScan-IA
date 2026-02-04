@@ -91,7 +91,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
             case 'nutrition':
                 return 'El análisis nutricional detallado y completo es una función exclusiva para usuarios Premium.';
             case 'chefbot':
-                return 'Has agotado tus 10 créditos diarios con el Agente Chef IA. ¡Los usuarios Premium tienen consultas ilimitadas!';
+                return 'Has agotado tus 5 créditos diarios con el Agente Chef IA. ¡Los usuarios Premium tienen consultas ilimitadas!';
             case 'more-recipes':
                 return 'Los usuarios Free solo pueden ver 3 versiones de recetas. ¡Con Premium obtienes 5 versiones inicialmente y puedes extenderlas hasta 15 versiones por cada búsqueda!';
 
@@ -148,7 +148,7 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
                     </div>
                     <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
-                        Chefbot.IA ilimitado (vs 10 créditos)
+                        CHEFBOT.IA ILIMITADO (VS 5 CREDITOS)
                     </div>
                     <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="material-symbols-outlined text-primary text-xs">check_circle</span>
