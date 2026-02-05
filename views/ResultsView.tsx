@@ -81,12 +81,26 @@ const ResultsView: React.FC<ResultsViewProps> = ({
             >
               {/* Background Image Preview */}
               <div className="absolute top-0 right-0 w-32 h-full opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                <img src={getRecipeImage(recipe, 400)} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={getRecipeImage(recipe, 400)}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=400";
+                  }}
+                />
               </div>
 
               <div className="flex gap-4 relative z-10 items-center">
                 <div style={{ backgroundColor: 'var(--bg-surface-inner)', borderColor: 'var(--card-border)' }} className="w-24 h-24 rounded-2xl overflow-hidden border flex-shrink-0 relative">
-                  <img src={getRecipeImage(recipe, 300)} alt={recipe.title} className="w-full h-full object-cover" />
+                  <img
+                    src={getRecipeImage(recipe, 300)}
+                    alt={recipe.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300";
+                    }}
+                  />
                   {recipe.category && (
                     <div className="absolute top-0 left-0 bg-primary text-black text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-br-lg shadow-sm z-20">
                       {recipe.category}

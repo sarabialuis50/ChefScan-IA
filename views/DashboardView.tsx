@@ -20,7 +20,7 @@ interface DashboardViewProps {
   onScanClick: () => void;
   onRecipeClick: (recipe: Recipe) => void;
   onGenerate: (recipes: Recipe[]) => void;
-  onStartGeneration: (ingredients: string[], portions: number, itemId?: string) => void;
+  onStartGeneration: (ingredients: string[], portions: number, itemId?: string, isFromScanFlow?: boolean) => void;
   onExploreClick: () => void;
   onNotificationsClick: () => void;
   onSettingsClick?: () => void;
@@ -118,8 +118,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   // ... (useEffect for timer remains same)
 
   const handleGenerate = () => {
-    if (!manualInput.trim()) return;
-    onStartGeneration(manualInput.split(',').map(i => i.trim()), portions);
+    if (!manualInput.trim() && scannedIngredients.length === 0) return;
+
+    // Si hay ingredientes escaneados o una imagen previa, marcamos como flujo de escaneo
+    const isScanFlow = (scannedIngredients && scannedIngredients.length > 0) || !!previewImage;
+
+    onStartGeneration(manualInput.split(',').map(i => i.trim()).filter(Boolean), portions, undefined, isScanFlow);
 
     // Limpiar imagen automáticamente tras generar
     setPreviewImage(null);
@@ -546,6 +550,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     src={getRecipeImage(recipe, 300)}
                     alt={recipe.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300";
+                    }}
                   />
                 </div>
 
@@ -619,6 +626,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   src={getRecipeImage(recipe, 300)}
                   alt={recipe.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300";
+                  }}
                 />
                 <button
                   onClick={(e) => {

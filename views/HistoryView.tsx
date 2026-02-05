@@ -35,6 +35,9 @@ const ImageWithPlaceholder: React.FC<{ imageUrl?: string, id: string, alt: strin
         src={finalSrc}
         alt={alt}
         onLoad={() => setLoaded(true)}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=200`;
+        }}
         className={`w-full h-full object-cover transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
     </div>

@@ -311,12 +311,14 @@ const App: React.FC = () => {
           previousView: state.previousView,
           selectedRecipe: selectedRecipe,
           lastTabViews: lastTabViews,
-          language: state.language
+          language: state.language,
+          chefCredits: state.chefCredits,
+          recipeGenerationsToday: state.recipeGenerationsToday
         }));
         localStorage.setItem('chefscan_lang', state.language);
       } catch (e) { }
     }
-  }, [state.user, state.favoriteRecipes, state.recentRecipes, state.inventory, state.history, state.currentView, selectedRecipe, lastTabViews]);
+  }, [state.user, state.favoriteRecipes, state.recentRecipes, state.inventory, state.history, state.currentView, selectedRecipe, lastTabViews, state.chefCredits, state.recipeGenerationsToday]);
 
 
   // Deep Linking for Shared Recipes
@@ -392,51 +394,9 @@ const App: React.FC = () => {
       }
     }
 
-    // --- CLIENT-SIDE RESET GUARD ---
-    // Fix: We must check both LocalStorage AND the DB's last_reset_date.
-    // Without checking DB, logging out (clearing LS) and logging in would grant fresh credits.
-    if (profileData) {
-      const today = new Date().toISOString().split('T')[0];
-      const localResetKey = `chefscan_reset_${userId}`;
-      const lastLocalReset = localStorage.getItem(localResetKey);
-
-      // Trust the server: if DB says it was reset/updated today, DO NOT reset again.
-      const isDbupToDate = profileData.last_reset_date === today;
-
-      if (!isDbupToDate && lastLocalReset !== today) {
-        // It's a new day and neither DB nor LocalStorage knows about it.
-        // We only reset if there's something to reset (generations > 0 or wrong credits)
-        const defaultCredits = profileData.is_premium ? 999 : 5;
-
-        if (profileData.recipe_generations_today > 0 || profileData.chef_credits !== defaultCredits) {
-          console.log("New day detected (Client-side). Resetting credits and generations...");
-          const { error: resetError } = await supabase
-            .from('profiles')
-            .update({
-              recipe_generations_today: 0,
-              chef_credits: defaultCredits,
-              last_reset_date: today // IMPORTANT: Update DB date too so it persists across logouts
-            })
-            .eq('id', userId);
-
-          if (!resetError) {
-            localStorage.setItem(localResetKey, today);
-            profileData.recipe_generations_today = 0;
-            profileData.chef_credits = defaultCredits;
-            profileData.last_reset_date = today;
-          }
-        } else {
-          // Nothing to reset (new user or already 0), just mark as sync
-          localStorage.setItem(localResetKey, today);
-        }
-      } else {
-        // DB is already up to date OR LocalStorage is up to date.
-        // Ensure LocalStorage matches DB to avoid future checks
-        if (lastLocalReset !== today) {
-          localStorage.setItem(localResetKey, today);
-        }
-      }
-    }
+    // --- SERVER-SIDE RESET HANDLED VIA RPC ---
+    // We already called get_profile_with_reset which triggers the DB reset.
+    // We just need to ensure our finalUser object uses the updated values.
     // ---------------------------------
 
     // Prepare default/fallback data if profile still missing
@@ -588,7 +548,8 @@ const App: React.FC = () => {
       ...prev,
       user,
       currentView: 'dashboard',
-      chefCredits: user.isPremium ? 999 : 5
+      chefCredits: user.chefCredits ?? (user.isPremium ? 999 : 5),
+      recipeGenerationsToday: user.recipeGenerationsToday ?? 0
     }));
   };
 
@@ -823,17 +784,15 @@ const App: React.FC = () => {
     }
   };
 
-  const handleStartGeneration = async (ingredients: string[], portions: number, itemId?: string) => {
+  const handleStartGeneration = async (ingredients: string[], portions: number, itemId?: string, isFromScanFlow: boolean = false) => {
     // Si viene de un desafío de "desperdicio cero", marcamos el ID del reto como aceptado
     if (itemId) {
       setState(prev => ({ ...prev, acceptedChallengeId: itemId }));
     }
 
     // CRÍTICO: Verificar si ya pagamos "el peaje" en el escaneo.
-    // Si tenemos ingredientes escaneados en el estado, significa que venimos del flujo de Escáner/Galería
-    // y YA se cobró el crédito en handleScanComplete. No debemos cobrar de nuevo.
-    // Si es manual (scannedIngredients vacio), cobramos AQUÍ.
-    const isAlreadyPaid = state.scannedIngredients.length > 0;
+    // Usamos el flag isFromScanFlow o el estado de scannedIngredients.
+    const isAlreadyPaid = isFromScanFlow || state.scannedIngredients.length > 0;
 
     // Check Limits - PRIMERO verificar en la DB para evitar condiciones de carrera
     // SOLAMENTE verificamos bloqueo si NO hemos pagado aún (Manual Flow)

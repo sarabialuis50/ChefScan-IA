@@ -2,40 +2,56 @@ const ENV_KEY = import.meta.env.VITE_PEXELS_API_KEY || "";
 const FALLBACK_KEY = "NcAFAIe1Vdf4ufPGwuxFmjbCjWpf4yeCRrd4goHlM8rBaPD9c4S3UZEL";
 
 export const getRecipeImage = async (query: string): Promise<string> => {
-    // Determine effective key
     const effectiveKey = ENV_KEY || FALLBACK_KEY;
 
-    if (!ENV_KEY) {
-        console.warn("⚠️ Pexels Env Key missing, using fallback.");
+    // Clean query: prioritize photoQuery words, ensuring they are valid for Pexels
+    // We remove some common stop words and ensure it's simple
+    let cleanQuery = (query || "delicious food").toLowerCase()
+        .replace(/recipe|receta|con|with|style|estilo/gi, '')
+        .replace(/[^\w\s]/gi, '')
+        .trim();
+
+    // If query is too long, take only first 3 words for better Pexels matching
+    const words = cleanQuery.split(/\s+/);
+    if (words.length > 3) {
+        cleanQuery = words.slice(0, 3).join(' ');
     }
 
-    // Clean query
-    const cleanQuery = (query + " food dish").replace(/[^\w\s]/gi, '');
+    const searchQuery = `${cleanQuery} food dish`;
 
     try {
-        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(cleanQuery)}&per_page=1&orientation=landscape`, {
-            headers: {
-                Authorization: effectiveKey
-            }
-        });
+        const fetchImage = async (q: string) => {
+            const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=1&orientation=landscape`;
+            const response = await fetch(url, {
+                headers: { Authorization: effectiveKey }
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data.photos?.[0]?.src?.large || null;
+        };
 
-        if (!response.ok) {
-            console.warn(`Pexels Error ${response.status}:`, await response.text());
-            throw new Error(`Pexels API Error: ${response.status}`);
+        // Try primary query
+        let imageUrl = await fetchImage(searchQuery);
+
+        // If fails, try just the clean query without "food dish"
+        if (!imageUrl) {
+            imageUrl = await fetchImage(cleanQuery);
         }
 
-        const data = await response.json();
-
-        if (data.photos && data.photos.length > 0) {
-            return data.photos[0].src.large;
+        // If still fails, try a generic word if we have one
+        if (!imageUrl && words.length > 0) {
+            imageUrl = await fetchImage(words[0] + " meal");
         }
 
-        console.log("No photos found in Pexels for:", cleanQuery);
-        // Fallback to Unsplash specific food search if Pexels fails
-        return `https://images.unsplash.com/photo-1546767012-149539f9958e?auto=format&fit=crop&q=80&w=800`;
+        if (imageUrl) return imageUrl;
+
+        console.warn("Pexels found no matches for:", searchQuery);
+        // High quality fallback from Unsplash (Food category)
+        return `https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=1000`;
+
     } catch (error) {
-        console.error("Error fetching image from Pexels, falling back:", error);
-        // Robust Fallback
-        return `https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=800`;
+        console.error("Pexels fetch error:", error);
+        // Robust fallback
+        return `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1000`;
     }
 };

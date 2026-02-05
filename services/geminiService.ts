@@ -117,9 +117,12 @@ export const generateRecipes = async (
 
     return await Promise.all(recipes.map(async (recipe: any) => {
       try {
-        const imageUrl = await getRecipeImage(recipe.photoQuery || recipe.title || "cooking");
+        const photoQuery = recipe.photoQuery || recipe.title || "cooking food";
+        console.log(`📸 Buscando imagen para: "${recipe.title}" con query: "${photoQuery}"`);
+        const imageUrl = await getRecipeImage(photoQuery);
         return { ...recipe, imageUrl };
-      } catch {
+      } catch (err) {
+        console.warn("Error getting recipe image:", err);
         return { ...recipe, imageUrl: "https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&q=80&w=800" };
       }
     }));
