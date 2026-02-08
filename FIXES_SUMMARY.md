@@ -30,39 +30,32 @@
 ### ✅ Problema 2: Reinicio de Créditos - SOLUCIONADO
 
 **Causa raíz identificada:**
-- La función `get_profile_with_reset` solo hacía un UPDATE dummy para activar el trigger
-- El trigger se ejecutaba correctamente pero solo cuando había un UPDATE en el perfil
-- Si el usuario no hacía ninguna acción, el reinicio nunca ocurría
+- La función usaba `CURRENT_DATE` que es UTC (5 horas adelante de Colombia)
+- Esto causaba que el reinicio ocurriera a las 7:00 PM hora Colombia en vez de medianoche
 
 **Solución aplicada directamente en Supabase:**
-1. **Reinicio manual** de todos los usuarios con fechas anteriores
-2. **Mejora de la función RPC** `get_profile_with_reset`:
-   - Ahora verifica directamente si `last_reset_date < CURRENT_DATE`
-   - Hace el reinicio directamente sin depender del trigger
-   - Reinicia `recipe_generations_today` a 0
-   - Reinicia `chef_credits` a 5 (free) o 999 (premium)
-   - Actualiza `last_reset_date` a `CURRENT_DATE`
+1. **Función actualizada** para usar `NOW() AT TIME ZONE 'America/Bogota'`
+2. El reinicio ahora ocurre a las **00:01 hora de Colombia**
+3. Se corrigieron las fechas de todos los usuarios para reflejar la fecha correcta de Colombia
 
 ---
 
-## 📝 Cambios en Supabase (Ya Aplicados)
+## 📝 Migraciones Aplicadas en Supabase
 
-| Cambio | Estado |
-|--------|--------|
-| Migración `fix_get_profile_with_reset_function` | ✅ Aplicada |
-| Reinicio manual de usuarios con fechas viejas | ✅ Completado |
-| Verificación de funciones RPC | ✅ Confirmado |
+| Migración | Descripción |
+|-----------|-------------|
+| `fix_get_profile_with_reset_function` | Mejora de la función RPC |
+| `fix_timezone_colombia_credits_reset` | Corrección de zona horaria a America/Bogota |
 
 ---
 
-## 📁 Archivos Modificados en el Código
+## 🕐 Comportamiento del Reinicio de Créditos
 
-| Archivo | Cambio | Estado |
-|---------|--------|--------|
-| `services/pexelsService.ts` | Sistema de imágenes únicas con cache | ✅ Subido a GitHub |
-| `services/geminiService.ts` | Limpieza de cache, procesamiento secuencial | ✅ Subido a GitHub |
-| `supabase/migrations/fix_daily_credits_reset.sql` | Referencia de la migración aplicada | ✅ Documentado |
-| `FIXES_SUMMARY.md` | Este archivo | ✅ Actualizado |
+- **Zona horaria**: America/Bogota (UTC-5)
+- **Hora de reinicio**: 00:01 hora Colombia
+- **Cuándo ocurre**: Al iniciar sesión después de medianoche
+- **Créditos reiniciados**: 5 (usuarios free), 999 (premium)
+- **Generaciones reiniciadas**: 0
 
 ---
 
@@ -71,22 +64,9 @@
 ### Probar Imágenes Únicas:
 1. Genera una nueva receta desde el escáner o modo manual
 2. Verifica que cada receta tiene una imagen diferente
-3. Revisa la consola del navegador para ver los logs:
-   - `🗑️ Cache de imágenes limpiado`
-   - `📸 [1/3] Buscando imagen para: "..." con query: "..."`
-   - `📸 Imagen única seleccionada para "..."`
+3. Revisa la consola del navegador para ver los logs
 
 ### Probar Reinicio de Créditos:
-1. Mañana (después de medianoche), cierra sesión y vuelve a iniciar
-2. Los créditos deberían reiniciarse a 5 (usuarios free)
-3. El contador `recipe_generations_today` debería ser 0
-
----
-
-## ⚠️ Notas Importantes
-
-1. **Zona Horaria**: El reinicio usa `CURRENT_DATE` de PostgreSQL, que está en UTC. El reinicio efectivo ocurrirá a las 7:00 PM hora Colombia (00:00 UTC).
-
-2. **Compatibilidad**: Los cambios son retrocompatibles. Los usuarios existentes no perdieron datos.
-
-3. **Trigger existente**: El trigger `tr_daily_limits_reset` sigue funcionando como respaldo, pero la función RPC ahora hace el trabajo principal.
+1. Después de las 00:01 hora Colombia, cierra sesión y vuelve a iniciar
+2. Los créditos se reiniciarán automáticamente a 5
+3. El contador de generaciones volverá a 0
