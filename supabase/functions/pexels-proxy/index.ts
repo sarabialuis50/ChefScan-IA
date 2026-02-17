@@ -7,6 +7,9 @@ const corsHeaders = {
     'Access-Control-Max-Age': '86400',
 };
 
+// Hardcoded fallback key (same as in frontend) to ensure production works immediately
+const FALLBACK_PEXELS_KEY = "NcAFAIe1Vdf4ufPGwuxFmjbCjWpf4yeCRrd4goHlM8rBaPD9c4S3UZEL";
+
 serve(async (req) => {
     // Handle CORS
     if (req.method === 'OPTIONS') {
@@ -15,10 +18,12 @@ serve(async (req) => {
 
     try {
         const { query, per_page = 20 } = await req.json();
-        const PEXELS_API_KEY = Deno.env.get('VITE_PEXELS_API_KEY');
+
+        // Try getting from secrets first, then fallback to hardcoded
+        const PEXELS_API_KEY = Deno.env.get('VITE_PEXELS_API_KEY') || FALLBACK_PEXELS_KEY;
 
         if (!PEXELS_API_KEY) {
-            throw new Error('VITE_PEXELS_API_KEY not set in Supabase Secrets');
+            throw new Error('PEXELS_API_KEY not configured');
         }
 
         const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${per_page}`;
