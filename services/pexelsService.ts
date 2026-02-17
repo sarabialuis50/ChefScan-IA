@@ -5,6 +5,10 @@ const FALLBACK_KEY = "NcAFAIe1Vdf4ufPGwuxFmjbCjWpf4yeCRrd4goHlM8rBaPD9c4S3UZEL";
 const usedImagesCache = new Set<string>();
 let fallbackCounter = 0;
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const isDev = import.meta.env.DEV || window.location.hostname === 'localhost';
+
 /**
  * Obtiene una imagen única para una receta.
  * Busca múltiples resultados y selecciona uno no usado.
@@ -14,26 +18,53 @@ export const getRecipeImage = async (query: string): Promise<string> => {
     const cleanQuery = (query || "delicious food").trim();
     const timestamp = Date.now();
 
-    console.log(`🔍 [Pexels] Buscando: "${cleanQuery}" (Key: ${effectiveKey.substring(0, 5)}...)`);
+    console.log(`🔍 [Pexels] Buscando: "${cleanQuery}" (Modo: ${isDev ? 'Local' : 'Proxy Production'})`);
 
     try {
         const fetchImages = async (q: string): Promise<string[]> => {
-            const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=20`;
-            const response = await fetch(url, {
-                headers: {
-                    "Authorization": effectiveKey
+            let photos: string[] = [];
+
+            if (isDev) {
+                // Direct call in dev for speed and simplicity
+                const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(q)}&per_page=20`;
+                const response = await fetch(url, {
+                    headers: {
+                        "Authorization": effectiveKey
+                    }
+                });
+
+                if (!response.ok) {
+                    console.warn(`❌ Pexels API direct error: ${response.status} (${response.statusText})`);
+                    return [];
                 }
-            });
 
-            if (!response.ok) {
-                console.warn(`❌ Pexels API error: ${response.status} (${response.statusText}) para: ${q}`);
-                return [];
+                const data = await response.json();
+                photos = (data.photos || [])
+                    .map((photo: any) => photo?.src?.large || photo?.src?.original)
+                    .filter(Boolean);
+            } else {
+                // Proxy call in production to bypass CORS/CSP/Domain-blocks
+                const proxyUrl = `${SUPABASE_URL}/functions/v1/pexels-proxy`;
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({ query: q, per_page: 20 })
+                });
+
+                if (!response.ok) {
+                    console.warn(`❌ Pexels Proxy error: ${response.status}`);
+                    return [];
+                }
+
+                const data = await response.json();
+                photos = (data.photos || [])
+                    .map((photo: any) => photo?.src?.large || photo?.src?.original)
+                    .filter(Boolean);
             }
-
-            const data = await response.json();
-            const photos = (data.photos || [])
-                .map((photo: any) => photo?.src?.large || photo?.src?.original)
-                .filter(Boolean);
 
             console.log(`✅ Pexels encontró ${photos.length} imágenes para "${q}"`);
             return photos;
@@ -86,4 +117,5 @@ export const clearImageCache = () => {
     fallbackCounter = 0;
     console.log("🗑️ Cache de imágenes reiniciado");
 };
+
 
