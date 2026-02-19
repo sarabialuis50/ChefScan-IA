@@ -21,21 +21,38 @@ Deno.serve(async (req: Request) => {
         const token = authHeader?.replace('Bearer ', '');
 
         if (!token) {
-            throw new Error('No authorization token');
+            throw new Error('No se encontró el token de autorización.');
         }
 
-        // Get user
+        // Get user profile data for better payment method availability
         const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
-        if (userError || !user) throw new Error('Invalid user');
+        if (userError || !user) throw new Error('Usuario no válido o sesión expirada.');
+
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('name, phone')
+            .eq('id', user.id)
+            .single();
 
         const ACCESS_TOKEN = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN');
         if (!ACCESS_TOKEN) {
-            throw new Error('MERCADOPAGO_ACCESS_TOKEN not configured in Supabase Secrets');
+            throw new Error('MERCADOPAGO_ACCESS_TOKEN no está configurado en Supabase.');
         }
+
+        // Split name for Mercado Pago (Best Practice)
+        const fullName = profile?.name || user.user_metadata?.full_name || 'Chef';
+        const nameParts = fullName.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'Scan';
 
         // Subscription details
         const amount = 19900; // COP
         const reference = `cs_${user.id}_${Date.now()}`;
+
+        // Determine return URLs
+        const referer = req.headers.get('referer') || '';
+        const isLocalhost = referer.includes('localhost') || referer.includes('127.0.0.1');
+        const baseUrl = isLocalhost ? 'https://chefscania.com' : referer.split('?')[0];
 
         // Create Preference in Mercado Pago
         const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
@@ -55,27 +72,43 @@ Deno.serve(async (req: Request) => {
                     }
                 ],
                 external_reference: reference,
+                payer: {
+                    email: user.email,
+                    first_name: firstName,
+                    last_name: lastName,
+                    phone: profile?.phone ? {
+                        number: profile.phone.replace(/\D/g, '')
+                    } : undefined,
+                },
                 back_urls: {
-                    success: `${req.headers.get('referer') || 'https://chefscania.com'}`,
-                    failure: `${req.headers.get('referer') || 'https://chefscania.com'}`,
-                    pending: `${req.headers.get('referer') || 'https://chefscania.com'}`,
+                    success: baseUrl,
+                    failure: baseUrl,
+                    pending: baseUrl,
                 },
                 auto_return: "approved",
                 notification_url: "https://vhodqxomxpjzfdvwmaok.supabase.co/functions/v1/mercadopago-webhook",
+                statement_descriptor: "CHEFSCAN IA",
+                // Explicitly allow all methods to ensure Nequi/Daviplata/PSE are visible if account permits
+                payment_methods: {
+                    excluded_payment_methods: [],
+                    excluded_payment_types: [],
+                    installments: 1,
+                    default_installments: 1
+                }
             }),
         });
 
-        const preference = await mpResponse.json();
+        const preferenceData = await mpResponse.json();
 
         if (!mpResponse.ok) {
-            console.error('Mercado Pago Error:', preference);
-            throw new Error(preference.message || 'Error creating preference');
+            console.error('Mercado Pago API Error Detail:', JSON.stringify(preferenceData));
+            throw new Error(preferenceData.message || 'Error en la API de Mercado Pago');
         }
 
         return new Response(JSON.stringify({
-            id: preference.id,
-            init_point: preference.init_point,
-            sandbox_init_point: preference.sandbox_init_point,
+            id: preferenceData.id,
+            init_point: preferenceData.init_point,
+            sandbox_init_point: preferenceData.sandbox_init_point,
             reference
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -83,6 +116,7 @@ Deno.serve(async (req: Request) => {
         });
 
     } catch (error) {
+        console.error('Function Error:', error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
