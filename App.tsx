@@ -1344,6 +1344,7 @@ const App: React.FC = () => {
               }}
               onLogout={handleLogout}
               onEditProfile={() => navigateTo('settings')}
+              onShowPremium={() => setPremiumModal({ isOpen: true, reason: 'upgrade' })}
             />
           </Layout>
         );

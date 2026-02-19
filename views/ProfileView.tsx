@@ -9,9 +9,10 @@ interface ProfileViewProps {
   };
   onLogout: () => void;
   onEditProfile: () => void;
+  onShowPremium: () => void;
 }
 
-const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout, onEditProfile }) => {
+const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout, onEditProfile, onShowPremium }) => {
   return (
     <div className="flex flex-col pb-1">
       <nav style={{ borderColor: 'var(--card-border)' }} className="flex items-center justify-between p-6 border-b">
@@ -83,7 +84,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout, onEdit
               </div>
             </div>
             {!user?.isPremium && (
-              <button style={{ backgroundColor: 'var(--primary)', color: 'var(--text-on-primary)' }} className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+              <button
+                onClick={onShowPremium}
+                style={{ backgroundColor: 'var(--primary)', color: 'var(--text-on-primary)' }}
+                className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
+              >
                 Upgrade
               </button>
             )}

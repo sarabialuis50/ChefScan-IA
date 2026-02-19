@@ -19,66 +19,22 @@ const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, reason }) 
             const { data: { user } } = await supabase.auth.getUser();
             if (!user?.email) throw new Error("No se pudo identificar al usuario.");
 
-            // 2. Ensure ePayco is available
-            let ePaycoHandler = (window as any).ePayco;
-
-            if (!ePaycoHandler) {
-                console.log("ePayco not found in window, attempting to load script...");
-                await new Promise((resolve) => {
-                    const script = document.createElement('script');
-                    script.src = 'https://checkout.epayco.co/checkout.js';
-                    script.async = true;
-                    script.onload = () => resolve(true);
-                    script.onerror = () => resolve(false);
-                    document.body.appendChild(script);
-                });
-                ePaycoHandler = (window as any).ePayco;
-            }
-
-            if (!ePaycoHandler) {
-                throw new Error("La pasarela de pagos (ePayco) no está disponible. Por favor refresca la página.");
-            }
-
-            // 3. Get Checkout Config from Edge Function
-            const { data: epaycoData, error } = await supabase.functions.invoke('create-epayco-checkout');
+            // 2. Create Mercado Pago Preference using Edge Function
+            const { data: mpData, error } = await supabase.functions.invoke('create-mercadopago-checkout');
 
             if (error) throw error;
-            if (epaycoData?.error) throw new Error(epaycoData.error);
+            if (mpData?.error) throw new Error(mpData.error);
 
-            // 4. Open ePayco Widget
-            const handler = ePaycoHandler.checkout.configure({
-                key: epaycoData.publicKey,
-                test: import.meta.env.DEV // Auto-detect: true in local, false in production
-            });
-
-            const data = {
-                // Generales
-                name: "Suscripción ChefScan Premium",
-                description: "Acceso total ilimitado por 1 mes",
-                invoice: epaycoData.reference,
-                currency: "cop",
-                amount: epaycoData.amount.toString(),
-                tax_base: "0",
-                tax: "0",
-                country: "co",
-                lang: "es",
-
-                // Atributos cliente
-                external: "false",
-                extra1: epaycoData.reference, // Usamos esto para el Webhook también
-                email_billing: epaycoData.email,
-                name_billing: epaycoData.name,
-
-                // Redirección y Confirmación
-                confirm: `https://vhodqxomxpjzfdvwmaok.supabase.co/functions/v1/epayco-webhook`,
-                response: `${window.location.origin}`,
-            };
-
-            handler.open(data);
+            // 3. Redirect to Mercado Pago Checkout
+            if (mpData.init_point) {
+                window.location.href = mpData.init_point;
+            } else {
+                throw new Error("No se pudo obtener el link de pago.");
+            }
 
         } catch (err: any) {
-            console.error('ePayco Error:', err);
-            alert('Error al procesar el pago: ' + (err.message || 'Inténtalo más tarde'));
+            console.error('Mercado Pago Error:', err);
+            alert('Error al procesar el pago con Mercado Pago: ' + (err.message || 'Inténtalo más tarde'));
         } finally {
             setLoading(false);
         }
